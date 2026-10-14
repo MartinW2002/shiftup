@@ -1,0 +1,24 @@
+<% content_for :title, "ShiftUp" %>
+
+<section class="hero">
+  <h1>ShiftUp</h1>
+  <p class="lead">Volunteer coordination for student organizations: publish shifts, sign up within capacity, and refill cancellations from a fair waiting list.</p>
+</section>
+
+<% if user_signed_in? %>
+  <h2>Your organizations</h2>
+  <% if @memberships.any? %>
+    <ul class="card-list">
+      <% @memberships.each do |membership| %>
+        <li class="card">
+          <%= link_to membership.organization.name, membership.organization %>
+          <span class="badge"><%= membership.role.humanize %></span>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="muted">You are not a member of any organization yet.</p>
+  <% end %>
+<% else %>
+  <p><%= link_to "Log in", new_user_session_path %> or <%= link_to "create an account", new_user_registration_path %> to get started.</p>
+<% end %>

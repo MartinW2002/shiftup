@@ -1,0 +1,18 @@
+<% content_for :title, "Organizations · ShiftUp" %>
+
+<h1>Organizations</h1>
+
+<% if @organizations.any? %>
+  <ul class="card-list">
+    <% @organizations.each do |organization| %>
+      <li class="card">
+        <%= link_to organization.name, organization %>
+        <% if organization.description.present? %>
+          <p class="muted"><%= organization.description %></p>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+<% else %>
+  <p class="muted">You are not a member of any organization yet.</p>
+<% end %>

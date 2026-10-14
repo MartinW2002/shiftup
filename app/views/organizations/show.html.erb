@@ -1,0 +1,25 @@
+<% content_for :title, "#{@organization.name} · ShiftUp" %>
+
+<h1><%= @organization.name %></h1>
+<% if @organization.description.present? %>
+  <p class="lead"><%= @organization.description %></p>
+<% end %>
+
+<h2>Activities</h2>
+<% if @activities.any? %>
+  <ul class="card-list">
+    <% @activities.each do |activity| %>
+      <li class="card">
+        <strong><%= activity.title %></strong>
+        <% if activity.location.present? %>
+          <span class="muted">· <%= activity.location %></span>
+        <% end %>
+        <% if activity.description.present? %>
+          <p><%= activity.description %></p>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+<% else %>
+  <p class="muted">No activities yet.</p>
+<% end %>

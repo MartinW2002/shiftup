@@ -1,0 +1,103 @@
+/*
+ * This is a manifest file that'll be compiled into application.css.
+ *
+ * With Propshaft, assets are served efficiently without preprocessing steps. You can still include
+ * application-wide styles in this file, but keep in mind that CSS precedence will follow the standard
+ * cascading order, meaning styles declared later in the document or manifest will override earlier ones,
+ * depending on specificity.
+ *
+ * Consider organizing styles into separate files for maintainability.
+ */
+
+:root {
+  --bg: #f7f7f5;
+  --surface: #ffffff;
+  --text: #1f2328;
+  --muted: #5f6b76;
+  --border: #dde1e5;
+  --accent: #1f6feb;
+  --notice-bg: #e7f5ec;
+  --notice-text: #18603a;
+  --alert-bg: #fdecec;
+  --alert-text: #9b1c1c;
+  --banner-bg: #fff4d6;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.5;
+  color: var(--text);
+  background: var(--bg);
+}
+
+a { color: var(--accent); }
+
+.container { max-width: 960px; margin: 0 auto; padding: 0 16px; }
+main.container { padding-top: 24px; padding-bottom: 48px; }
+
+.demo-banner {
+  background: var(--banner-bg);
+  text-align: center;
+  font-size: 0.85rem;
+  padding: 6px 16px;
+}
+
+.site-header { background: var(--surface); border-bottom: 1px solid var(--border); }
+.nav { display: flex; align-items: center; gap: 16px; min-height: 56px; flex-wrap: wrap; }
+.nav a { text-decoration: none; }
+.nav .brand { font-weight: 700; font-size: 1.2rem; color: var(--text); }
+.nav-spacer { flex: 1; }
+.nav form { margin: 0; }
+
+.link-button {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--accent);
+  font: inherit;
+  cursor: pointer;
+}
+
+.muted { color: var(--muted); }
+.lead { font-size: 1.1rem; color: var(--muted); }
+
+.flash { padding: 10px 14px; border-radius: 6px; margin-bottom: 16px; }
+.flash-notice { background: var(--notice-bg); color: var(--notice-text); }
+.flash-alert { background: var(--alert-bg); color: var(--alert-text); }
+
+.card-list { list-style: none; padding: 0; display: grid; gap: 12px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; }
+.card p { margin: 6px 0 0; }
+
+.badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+}
+
+form .field { margin-bottom: 12px; }
+input[type="email"], input[type="password"], input[type="text"], input[type="number"],
+input[type="datetime-local"], textarea, select {
+  width: 100%;
+  max-width: 420px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font: inherit;
+}
+input[type="submit"], button:not(.link-button) {
+  padding: 8px 16px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--accent);
+  color: #fff;
+  font: inherit;
+  cursor: pointer;
+}
