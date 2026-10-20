@@ -143,4 +143,3 @@ RSpec examples, the implementation, and the refactoring that followed._
 - Built on Ruby on Rails and the libraries listed in the `Gemfile`, notably Devise (authentication),
   Pundit (authorization), RSpec, Cucumber, Capybara, FactoryBot, Shoulda Matchers and SimpleCov.
 - Application skeleton generated with `rails new`; Devise views generated with `rails generate devise:views`.
-- _TODO: other reused code and tools_
