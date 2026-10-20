@@ -138,7 +138,7 @@ RSpec examples, the implementation, and the refactoring that followed._
 
 ## Acknowledgements
 
-- Claude Code has been used to generator code for this project.
+- Claude Code has been used to generator code for this project using model Opus 5.5.
 - Built on Ruby on Rails and the libraries listed in the `Gemfile`, notably Devise (authentication),
   Pundit (authorization), RSpec, Cucumber, Capybara, FactoryBot, Shoulda Matchers and SimpleCov.
 - Application skeleton generated with `rails new`; Devise views generated with `rails generate devise:views`.
