@@ -29,3 +29,11 @@ end
 Then("there should be no join button for {string}") do |name|
   expect(page).not_to have_css("#other-organizations .card", text: name)
 end
+
+When("I open {string} from my organizations") do |name|
+  within("#my-organizations") { find("a.card", text: name).click }
+end
+
+Then("I should be on the page for {string}") do |name|
+  expect(page).to have_current_path(organization_path(Organization.find_by!(name: name)))
+end

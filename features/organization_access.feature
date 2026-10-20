@@ -21,3 +21,8 @@ Feature: Organization access
   Scenario: Another organization's page is denied via a direct URL
     When I visit the page for "Harbour Tutoring Club"
     Then I should see "You are not authorized to perform this action."
+
+  Scenario: Opening my organization from the list
+    When I go to the organizations page
+    And I open "Green Campus Society" from my organizations
+    Then I should be on the page for "Green Campus Society"

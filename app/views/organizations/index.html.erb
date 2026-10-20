@@ -7,10 +7,12 @@
   <% if @my_organizations.any? %>
     <ul class="card-list">
       <% @my_organizations.each do |organization| %>
-        <li class="card">
-          <%= link_to organization.name, organization %>
-          <% if organization.description.present? %>
-            <p class="muted"><%= organization.description %></p>
+        <li>
+          <%= link_to organization, class: "card card-link" do %>
+            <strong><%= organization.name %></strong>
+            <% if organization.description.present? %>
+              <p class="muted"><%= organization.description %></p>
+            <% end %>
           <% end %>
         </li>
       <% end %>

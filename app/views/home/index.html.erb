@@ -10,9 +10,11 @@
   <% if @memberships.any? %>
     <ul class="card-list">
       <% @memberships.each do |membership| %>
-        <li class="card">
-          <%= link_to membership.organization.name, membership.organization %>
-          <span class="badge"><%= membership.role.humanize %></span>
+        <li>
+          <%= link_to membership.organization, class: "card card-link" do %>
+            <strong><%= membership.organization.name %></strong>
+            <span class="badge"><%= membership.role.humanize %></span>
+          <% end %>
         </li>
       <% end %>
     </ul>
