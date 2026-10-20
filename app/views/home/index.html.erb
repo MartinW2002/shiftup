@@ -17,7 +17,7 @@
       <% end %>
     </ul>
   <% else %>
-    <p class="muted">You are not a member of any organization yet.</p>
+    <p class="muted">You are not a member of any organization yet. <%= link_to "Browse organizations", organizations_path %> to join one.</p>
   <% end %>
 <% else %>
   <p><%= link_to "Log in", new_user_session_path %> or <%= link_to "create an account", new_user_registration_path %> to get started.</p>

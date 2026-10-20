@@ -2,17 +2,41 @@
 
 <h1>Organizations</h1>
 
-<% if @organizations.any? %>
-  <ul class="card-list">
-    <% @organizations.each do |organization| %>
-      <li class="card">
-        <%= link_to organization.name, organization %>
-        <% if organization.description.present? %>
-          <p class="muted"><%= organization.description %></p>
-        <% end %>
-      </li>
-    <% end %>
-  </ul>
-<% else %>
-  <p class="muted">You are not a member of any organization yet.</p>
-<% end %>
+<section id="my-organizations">
+  <h2>Your organizations</h2>
+  <% if @my_organizations.any? %>
+    <ul class="card-list">
+      <% @my_organizations.each do |organization| %>
+        <li class="card">
+          <%= link_to organization.name, organization %>
+          <% if organization.description.present? %>
+            <p class="muted"><%= organization.description %></p>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="muted">You are not a member of any organization yet. Join one below to see its activities.</p>
+  <% end %>
+</section>
+
+<section id="other-organizations">
+  <h2>Other organizations</h2>
+  <% if @other_organizations.any? %>
+    <ul class="card-list">
+      <% @other_organizations.each do |organization| %>
+        <li class="card card-row">
+          <div>
+            <strong><%= organization.name %></strong>
+            <% if organization.description.present? %>
+              <p class="muted"><%= organization.description %></p>
+            <% end %>
+          </div>
+          <%= button_to "Join", organization_membership_path(organization) %>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="muted">You belong to every organization.</p>
+  <% end %>
+</section>

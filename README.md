@@ -7,7 +7,7 @@ volunteers sign up within capacity, and cancellations are refilled from an order
 > Not an official CUHK service. All organizations, people and events are fictional.
 
 - **Members:** Olha Mudryk, Martin Wiesner
-- **Deployed URL:** _TODO: https://shiftup-xxxx.onrender.com_
+- **Deployed URL:** https://shiftup.onrender.com
 - **CI run for the submitted version:** _TODO: link to the GitHub Actions run_
 
 ## Features
@@ -16,7 +16,8 @@ volunteers sign up within capacity, and cancellations are refilled from an order
 | --- | --- |
 | Done | Accounts (Devise): sign up, log in, log out |
 | Done | Organizations with per-organization roles (volunteer, organizer) |
-| Done | Organization isolation: members see only their own organizations; direct URLs are denied |
+| Done | Join any organization as a volunteer from the organizations page (organizer roles are never self-assigned) |
+| Done | Organization isolation: only members see an organization's activities; direct URLs are denied |
 | Planned | Activities and shifts managed by organizers |
 | Planned | US1: sign up for a shift (capacity, waiting list, overlap check) |
 | Planned | US2: cancel and promote the next eligible volunteer |

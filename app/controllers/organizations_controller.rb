@@ -1,6 +1,8 @@
 class OrganizationsController < ApplicationController
   def index
-    @organizations = policy_scope(Organization).order(:name)
+    organizations = policy_scope(Organization).order(:name)
+    member_ids = current_user.memberships.pluck(:organization_id)
+    @my_organizations, @other_organizations = organizations.partition { |organization| member_ids.include?(organization.id) }
   end
 
   def show

@@ -71,6 +71,8 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 .card-list { list-style: none; padding: 0; display: grid; gap: 12px; }
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; }
 .card p { margin: 6px 0 0; }
+.card-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.card-row form { margin: 0; }
 
 .badge {
   display: inline-block;

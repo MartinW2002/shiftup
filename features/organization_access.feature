@@ -1,6 +1,6 @@
 Feature: Organization access
   As a member of a student organization
-  I want to see only the organizations I belong to
+  I want to see only the records of the organizations I belong to
   So that each organization's records stay private
 
   Background:
@@ -13,10 +13,10 @@ Feature: Organization access
     When I visit the page for "Green Campus Society"
     Then I should see "Green Campus Society"
 
-  Scenario: Organizations list shows only my memberships
+  Scenario: Organizations list separates my organizations from the others
     When I go to the organizations page
-    Then I should see "Green Campus Society"
-    And I should not see "Harbour Tutoring Club"
+    Then "Green Campus Society" should be listed under "Your organizations"
+    And "Harbour Tutoring Club" should be listed under "Other organizations"
 
   Scenario: Another organization's page is denied via a direct URL
     When I visit the page for "Harbour Tutoring Club"
