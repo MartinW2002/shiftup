@@ -65,5 +65,76 @@ Then("I should be confirmed for the {string} shift of {string}") do |time, title
 end
 
 Then("I should not be signed up for the {string} shift of {string}") do |time, title|
-  expect(shift_of(time, title).signups.where(user: @current_user)).to be_empty
+  expect(shift_of(time, title).signups.active.where(user: @current_user)).to be_empty
+end
+
+def volunteer_named(first_name)
+  User.find_by(name: "#{first_name} Volunteer") || create(:user, name: "#{first_name} Volunteer")
+end
+
+def yesterday_at(time)
+  Time.zone.parse("#{Date.yesterday} #{time}")
+end
+
+Given("{string} is waiting for the {string} shift of {string}") do |name, time, title|
+  shift = shift_of(time, title)
+  user = volunteer_named(name)
+  create(:membership, user: user, organization: shift.activity.organization) unless user.member_of?(shift.activity.organization)
+  create(:signup, :waitlisted, shift: shift, user: user, created_at: Time.current + Signup.count.seconds)
+end
+
+Given("{string} is confirmed for another shift tomorrow from {string} to {string}") do |name, from, to|
+  create(:signup, user: volunteer_named(name), shift: create(:shift, starts_at: tomorrow_at(from), ends_at: tomorrow_at(to)))
+end
+
+Given("{string} had a shift yesterday from {string} to {string}") do |title, from, to|
+  create(:shift, :past, activity: Activity.find_by!(title: title), starts_at: yesterday_at(from), ends_at: yesterday_at(to))
+end
+
+Given("{string} was confirmed for the {string} shift of {string}") do |name, time, title|
+  shift = shift_of(time, title)
+  user = volunteer_named(name)
+  create(:membership, user: user, organization: shift.activity.organization) unless user.member_of?(shift.activity.organization)
+  create(:signup, shift: shift, user: user)
+end
+
+Given("{string} was recorded as {word} for the {string} shift of {string}") do |name, attendance, time, title|
+  shift_of(time, title).signups.find_by!(user: volunteer_named(name)).update!(attendance: attendance)
+end
+
+Given("I am {string}") do |name|
+  @current_user = volunteer_named(name)
+end
+
+When("I go to edit the {string} shift of {string}") do |time, title|
+  visit edit_shift_path(shift_of(time, title))
+end
+
+When("I go to the {string} shift of {string}") do |time, title|
+  visit shift_path(shift_of(time, title))
+end
+
+When("I go to find shifts") do
+  visit shifts_path
+end
+
+When("I mark {string} as {string}") do |name, button|
+  within("#confirmed-volunteers li", text: volunteer_named(name).name) { click_button button }
+end
+
+When("I try to mark {string} as present for the {string} shift of {string} directly") do |name, time, title|
+  signup = shift_of(time, title).signups.find_by!(user: volunteer_named(name))
+  page.driver.submit :patch, signup_attendance_path(signup), { attendance: "present" }
+end
+
+Then("{string} should be confirmed for the {string} shift of {string}") do |name, time, title|
+  expect(shift_of(time, title).signups.find_by!(user: volunteer_named(name))).to be_confirmed
+end
+
+Then("{string} should be number {int} on the waiting list for the {string} shift of {string}") do |name, position, time, title|
+  expect(shift_of(time, title).signups.find_by!(user: volunteer_named(name)).waitlist_position).to eq(position)
+end
+
+Then("{string} should be recorded as {word} for the {string} shift of {string}") do |name, attendance, time, title|
+  expect(shift_of(time, title).signups.find_by!(user: volunteer_named(name)).attendance).to eq(attendance)
 end

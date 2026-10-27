@@ -65,4 +65,37 @@ RSpec.describe Signup, type: :model do
       expect(create(:signup, shift: shift).waitlist_position).to be_nil
     end
   end
+
+  describe "attendance" do
+    let(:started) { create(:shift, :past) }
+
+    it "can be recorded for a confirmed volunteer once the shift has started" do
+      signup = create(:signup, shift: started)
+
+      expect(signup.update(attendance: :present)).to be true
+      expect(signup.update(attendance: :absent)).to be true
+      expect(signup.update(attendance: :unmarked)).to be true
+    end
+
+    it "cannot be recorded before the shift starts" do
+      signup = create(:signup)
+
+      expect(signup.update(attendance: :present)).to be false
+      expect(signup.errors[:attendance]).to include("can only be recorded once the shift has started")
+    end
+
+    it "cannot be recorded for a volunteer who was only on the waiting list" do
+      signup = create(:signup, :waitlisted, shift: started)
+
+      expect(signup.update(attendance: :present)).to be false
+      expect(signup.errors[:attendance]).to include("can only be recorded for confirmed volunteers")
+    end
+
+    it "rejects an unknown value" do
+      signup = create(:signup, shift: started)
+
+      expect(signup.update(attendance: "late")).to be false
+      expect(signup.errors[:attendance]).to include("is not included in the list")
+    end
+  end
 end

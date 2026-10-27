@@ -4,7 +4,8 @@ end
 
 Given("I am a(n) {word} of {string}") do |role, name|
   @current_user ||= create(:user)
-  create(:membership, user: @current_user, organization: Organization.find_by!(name: name), role: role)
+  membership = @current_user.memberships.find_or_initialize_by(organization: Organization.find_by!(name: name))
+  membership.update!(role: role)
 end
 
 When("I visit the page for {string}") do |name|

@@ -72,7 +72,7 @@ RSpec.describe "Signups", type: :request do
   end
 
   describe "GET /my/shifts" do
-    it "lists the user's upcoming sign-ups only" do
+    it "lists the user's upcoming sign-ups, and past confirmed shifts with attendance separately" do
       sign_in volunteer
       create(:signup, shift: shift, user: volunteer)
       create(:signup, :cancelled, shift: create(:shift, activity: create(:activity, title: "Cancelled Shift")), user: volunteer)
@@ -81,8 +81,10 @@ RSpec.describe "Signups", type: :request do
 
       get signups_path
 
-      expect(response.body).to include("Lake Clean-up", "Confirmed")
-      expect(response.body).not_to include("Cancelled Shift", "Past Shift", "Someone Else")
+      page = Nokogiri::HTML(response.body)
+      expect(page.css("ul.card-list").first.text).to include("Lake Clean-up", "Confirmed")
+      expect(page.css("#past-shifts").text).to include("Past Shift", "Not recorded")
+      expect(response.body).not_to include("Cancelled Shift", "Someone Else")
     end
 
     it "shows the waiting list position" do
@@ -105,6 +107,50 @@ RSpec.describe "Signups", type: :request do
       get signups_path
 
       expect(response.body.index("Sooner Shift")).to be < response.body.index("Later Shift")
+    end
+  end
+
+  describe "DELETE /shifts/:shift_id/signup" do
+    before { sign_in volunteer }
+
+    it "cancels a confirmed place and confirms the first volunteer waiting" do
+      create(:signup, shift: shift, user: volunteer)
+      waiting = create(:signup, :waitlisted, shift: shift)
+
+      delete shift_signup_path(shift)
+
+      expect(response).to redirect_to(activity_path(activity))
+      expect(flash[:notice]).to eq("Your sign-up was cancelled. The next volunteer on the waiting list has been confirmed.")
+      expect(waiting.reload).to be_confirmed
+    end
+
+    it "lets a volunteer leave the waiting list" do
+      create(:signup, shift: shift)
+      create(:signup, :waitlisted, shift: shift, user: volunteer)
+
+      delete shift_signup_path(shift)
+
+      expect(flash[:notice]).to eq("You left the waiting list.")
+      expect(shift.signups.active.where(user: volunteer)).to be_empty
+    end
+
+    it "only ever cancels the logged-in user's own sign-up" do
+      other = create(:signup, shift: shift)
+
+      delete shift_signup_path(shift), params: { user_id: other.user_id }
+
+      expect(flash[:alert]).to eq("You are not signed up for this shift.")
+      expect(other.reload).to be_confirmed
+    end
+
+    it "refuses to cancel once the shift has started" do
+      started = create(:shift, :past, activity: activity)
+      create(:signup, shift: started, user: volunteer)
+
+      delete shift_signup_path(started)
+
+      expect(flash[:alert]).to eq("This shift has already started, so the sign-up can no longer be cancelled.")
+      expect(started.signups.sole).to be_confirmed
     end
   end
 end

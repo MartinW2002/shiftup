@@ -3,11 +3,12 @@
 # - Confirms the volunteer while the shift has free places, otherwise adds them to the waiting list.
 # - Refuses a shift that has started, a second sign-up for the same shift, and a shift that
 #   overlaps one of the volunteer's confirmed shifts (in any organization).
+# - Places owed to the waiting list are filled first (ShiftPromotion), so a newcomer can never
+#   take a free place ahead of an eligible volunteer who is already waiting.
 #
-# Concurrency: the shift row and then the user row are locked (SELECT ... FOR UPDATE) for the
+# Concurrency: the shift row and then the users involved are locked (SELECT ... FOR UPDATE) for the
 # whole check-and-insert, so simultaneous requests for the same shift, or by the same volunteer,
-# run one after another. Code that changes sign-ups must lock in the same order (shift, then
-# user) to avoid deadlocks.
+# run one after another. See ShiftPromotion for the lock order that prevents deadlocks.
 class ShiftSignup
   Result = Data.define(:signup, :error) do
     def success? = error.nil?
@@ -31,7 +32,7 @@ class ShiftSignup
   def call
     Shift.transaction do
       shift.lock!
-      user.lock!
+      ShiftPromotion.new(shift).call(also_lock: [ user.id ])
 
       error = refusal_reason
       if error

@@ -10,8 +10,12 @@ Rails.application.routes.draw do
     resources :shifts, only: %i[new create]
   end
 
-  resources :shifts, only: %i[show edit update destroy] do
-    resource :signup, only: :create
+  resources :shifts, only: %i[index show edit update destroy] do
+    resource :signup, only: %i[create destroy]
+  end
+
+  resources :signups, only: [] do
+    resource :attendance, only: :update
   end
 
   # The signed-in volunteer's own schedule.

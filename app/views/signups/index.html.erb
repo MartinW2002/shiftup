@@ -1,21 +1,45 @@
 <% content_for :title, "My shifts · ShiftUp" %>
 
-<h1>My shifts</h1>
+<div class="section-header">
+  <h1>My shifts</h1>
+  <%= link_to "Find shifts", shifts_path, class: "button button-secondary" %>
+</div>
 
-<% if @signups.any? %>
+<% if @upcoming.any? %>
   <ul class="card-list">
-    <% @signups.each do |signup| %>
+    <% @upcoming.each do |signup| %>
       <% shift = signup.shift %>
-      <li>
-        <%= link_to shift, class: "card card-link" do %>
-          <strong><%= shift.activity.title %></strong>
+      <li class="card card-row">
+        <div>
+          <%= link_to shift.activity.title, shift, class: "shift-time" %>
           <%= signup_status_badge(signup) %>
           <p><%= shift.time_range_text %></p>
           <p class="muted"><%= shift.activity.organization.name %><% if shift.activity.location.present? %> · <%= shift.activity.location %><% end %></p>
-        <% end %>
+        </div>
+        <%= render "shifts/signup_action", shift: shift, signup: signup %>
       </li>
     <% end %>
   </ul>
 <% else %>
-  <p class="muted">You have no upcoming shifts. <%= link_to "Browse your organizations", organizations_path %> to find one.</p>
+  <div class="card">
+    <p class="muted">You have no upcoming shifts.</p>
+    <div class="actions"><%= link_to "Find a shift", shifts_path, class: "button" %></div>
+  </div>
+<% end %>
+
+<% if @past.any? %>
+  <h2>Past shifts</h2>
+  <ul class="card-list" id="past-shifts">
+    <% @past.each do |signup| %>
+      <% shift = signup.shift %>
+      <li class="card card-row">
+        <div>
+          <%= link_to shift.activity.title, shift, class: "shift-time" %>
+          <p><%= shift.time_range_text %></p>
+          <p class="muted"><%= shift.activity.organization.name %></p>
+        </div>
+        <%= attendance_badge(signup) %>
+      </li>
+    <% end %>
+  </ul>
 <% end %>

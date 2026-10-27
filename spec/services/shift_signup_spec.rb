@@ -137,6 +137,28 @@ RSpec.describe ShiftSignup do
     end
   end
 
+  describe "fairness to the waiting list" do
+    it "confirms an eligible volunteer already waiting before a newcomer takes a free place" do
+      create(:signup, shift: shift)
+      waiting = create(:signup, :waitlisted, shift: shift)
+      shift.update_column(:capacity, 2) # a place opened without a promotion having run
+
+      result = sign_up
+
+      expect(waiting.reload).to be_confirmed
+      expect(result.signup).to be_waitlisted
+      expect(result.message).to eq("This shift is full. You are number 1 on the waiting list.")
+    end
+
+    it "gives the free place to the newcomer when nobody waiting is eligible" do
+      blocked = create(:signup, :waitlisted, shift: shift)
+      create(:signup, user: blocked.user, shift: create(:shift, starts_at: shift.starts_at, ends_at: shift.ends_at))
+
+      expect(sign_up.signup).to be_confirmed
+      expect(blocked.reload).to be_waitlisted
+    end
+  end
+
   # Each request runs in its own thread and database connection, so these examples
   # cannot use the usual per-example transaction.
   describe "under concurrent requests" do
@@ -151,8 +173,9 @@ RSpec.describe ShiftSignup do
       end
     end
 
+    # Thread#value re-raises any error (such as a deadlock) in the main thread.
     def in_parallel(jobs)
-      jobs.map { |job| Thread.new { ActiveRecord::Base.connection_pool.with_connection { job.call } } }.each(&:join)
+      jobs.map { |job| Thread.new { ActiveRecord::Base.connection_pool.with_connection { job.call } } }.each(&:value)
     end
 
     it "never confirms more volunteers than the capacity" do
@@ -172,6 +195,41 @@ RSpec.describe ShiftSignup do
       in_parallel([ first, second ].map { |target| -> { sign_up(Shift.find(target.id), User.find(user.id)) } })
 
       expect(Signup.where(user: user).confirmed.count).to eq(1)
+    end
+
+    it "never exceeds the capacity when a cancellation and new sign-ups happen at once" do
+      busy = create(:shift, capacity: 1)
+      leaving = create(:signup, shift: busy).user
+      waiting = create(:signup, :waitlisted, shift: busy, created_at: 1.minute.ago)
+      newcomers = create_list(:user, 2)
+
+      in_parallel(
+        [ -> { ShiftCancellation.new(shift: Shift.find(busy.id), user: User.find(leaving.id)).call } ] +
+        newcomers.map { |newcomer| -> { sign_up(Shift.find(busy.id), User.find(newcomer.id)) } }
+      )
+
+      expect(busy.signups.confirmed.count).to eq(1)
+      expect(waiting.reload).to be_confirmed
+    end
+
+    it "does not deadlock when two cancellations promote the same volunteers in opposite order" do
+      first = create(:shift, capacity: 1, starts_at: starts_at, ends_at: starts_at + 1.hour)
+      second = create(:shift, capacity: 1, starts_at: starts_at + 2.hours, ends_at: starts_at + 3.hours)
+      leavers = [ create(:signup, shift: first).user, create(:signup, shift: second).user ]
+      wendy, victor = create_list(:user, 2)
+      create(:signup, :waitlisted, shift: first, user: wendy, created_at: 2.minutes.ago)
+      create(:signup, :waitlisted, shift: first, user: victor, created_at: 1.minute.ago)
+      create(:signup, :waitlisted, shift: second, user: victor, created_at: 2.minutes.ago)
+      create(:signup, :waitlisted, shift: second, user: wendy, created_at: 1.minute.ago)
+
+      expect {
+        in_parallel([ first, second ].zip(leavers).map { |target, leaver|
+          -> { ShiftCancellation.new(shift: Shift.find(target.id), user: User.find(leaver.id)).call }
+        })
+      }.not_to raise_error
+
+      expect(first.signups.confirmed.sole.user).to eq(wendy)
+      expect(second.signups.confirmed.sole.user).to eq(victor)
     end
   end
 end

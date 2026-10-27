@@ -13,6 +13,7 @@
     <%= @shift.started? ? "This shift has started." : places_text(@shift) %>
     <% if @my_signup %>
       <%= signup_status_badge(@my_signup) %>
+      <%= attendance_badge(@my_signup) if @shift.started? && @my_signup.confirmed? %>
     <% end %>
   </p>
   <%= render "shifts/signup_action", shift: @shift, signup: @my_signup %>
@@ -25,18 +26,41 @@
                   form: { data: { turbo_confirm: "Delete this shift?" } } %>
   </div>
 
-  <h2>Confirmed (<%= @confirmed.size %> of <%= @shift.capacity %>)</h2>
+  <div class="section-header">
+    <h2>Confirmed (<%= @confirmed.size %> of <%= @shift.capacity %>)</h2>
+    <% if @shift.started? && @confirmed.any? %>
+      <span class="muted"><%= attendance_summary(@confirmed) %></span>
+    <% end %>
+  </div>
   <div class="card">
     <% if @confirmed.any? %>
       <ul class="roster" id="confirmed-volunteers">
         <% @confirmed.each do |signup| %>
-          <li><span><%= signup.user.name %></span> <span class="muted"><%= signup.user.email %></span></li>
+          <li>
+            <span><%= signup.user.name %></span>
+            <span class="muted"><%= signup.user.email %></span>
+            <% if @shift.started? %>
+              <%= attendance_badge(signup) %>
+              <span class="segmented" role="group" aria-label="Attendance for <%= signup.user.name %>">
+                <% { "present" => "Present", "absent" => "Absent" }.each do |value, label| %>
+                  <%= button_to label, signup_attendance_path(signup), method: :patch,
+                                params: { attendance: signup.attendance == value ? "unmarked" : value },
+                                class: [ "button-secondary", "button-small", ("selected" if signup.attendance == value) ],
+                                title: signup.attendance == value ? "Clear" : "Mark #{label.downcase}",
+                                aria: { pressed: signup.attendance == value } %>
+                <% end %>
+              </span>
+            <% end %>
+          </li>
         <% end %>
       </ul>
     <% else %>
       <p class="muted">Nobody has signed up yet.</p>
     <% end %>
   </div>
+  <% unless @shift.started? %>
+    <p class="muted">Attendance can be recorded once the shift starts.</p>
+  <% end %>
 
   <h2>Waiting list (<%= @waitlist.size %>)</h2>
   <div class="card">

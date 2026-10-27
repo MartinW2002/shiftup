@@ -1,0 +1,68 @@
+<% content_for :title, "Find shifts · ShiftUp" %>
+
+<h1>Find shifts</h1>
+<p class="lead">Upcoming shifts in your organizations.</p>
+
+<%= form_with model: @search, scope: :search, url: shifts_path, method: :get, class: "card filters", data: { turbo_action: "advance" } do |f| %>
+  <% if @search.errors.any? %>
+    <div class="flash flash-alert" role="alert"><%= @search.errors.full_messages.to_sentence %></div>
+  <% end %>
+
+  <div class="filters-grid">
+    <div class="field filters-wide">
+      <%= f.label :q, "Search" %>
+      <%= f.search_field :q, placeholder: "Activity, location or description" %>
+    </div>
+    <div class="field">
+      <%= f.label :organization_id, "Organization" %>
+      <%= f.collection_select :organization_id, @organizations, :id, :name, include_blank: "All my organizations" %>
+    </div>
+    <div class="field">
+      <%= f.label :from, "From" %>
+      <%= f.date_field :from %>
+    </div>
+    <div class="field">
+      <%= f.label :to, "To" %>
+      <%= f.date_field :to %>
+    </div>
+  </div>
+
+  <div class="filters-footer">
+    <div class="field field-check">
+      <%= f.check_box :open_only %>
+      <%= f.label :open_only, "Only shifts with free places" %>
+    </div>
+    <div class="actions">
+      <% if @search.filtered? %>
+        <%= link_to "Clear", shifts_path, class: "button button-ghost" %>
+      <% end %>
+      <%= f.submit "Search", name: nil %>
+    </div>
+  </div>
+<% end %>
+
+<p class="muted results-count"><%= pluralize(@shifts.size, "shift") %> found</p>
+
+<% if @shifts.any? %>
+  <ul class="card-list">
+    <% @shifts.each do |shift| %>
+      <% signup = @my_signups[shift.id] %>
+      <li class="card card-row" id="<%= dom_id(shift) %>">
+        <div>
+          <%= link_to shift.activity.title, shift, class: "shift-time" %>
+          <% if signup %>
+            <%= signup_status_badge(signup) %>
+          <% end %>
+          <p><%= shift.time_range_text %></p>
+          <p class="muted">
+            <%= shift.activity.organization.name %><% if shift.activity.location.present? %> · <%= shift.activity.location %><% end %>
+            · <%= places_text(shift) %>
+          </p>
+        </div>
+        <%= render "shifts/signup_action", shift: shift, signup: signup %>
+      </li>
+    <% end %>
+  </ul>
+<% else %>
+  <div class="card"><p class="muted">No shifts match these filters.</p></div>
+<% end %>

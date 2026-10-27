@@ -55,6 +55,16 @@ RSpec.describe "Shifts", type: :request do
       expect(shift.reload.capacity).to eq(5)
     end
 
+    it "confirms waiting volunteers when the capacity goes up" do
+      create_list(:signup, 3, shift: shift)
+      first, second = create_list(:signup, 2, :waitlisted, shift: shift)
+
+      patch shift_path(shift), params: { shift: { capacity: 5 } }
+
+      expect(flash[:notice]).to eq("Shift updated. 2 volunteers were moved from the waiting list.")
+      expect([ first.reload, second.reload ]).to all(be_confirmed)
+    end
+
     it "refuses a capacity below the confirmed volunteers" do
       create_list(:signup, 2, shift: shift)
 
@@ -122,6 +132,35 @@ RSpec.describe "Shifts", type: :request do
       expect(response).to redirect_to(root_path)
       expect(activity.shifts).to contain_exactly(shift)
       expect(shift.reload.capacity).to eq(3)
+    end
+  end
+
+  describe "GET /shifts" do
+    it "lists upcoming shifts of the user's organizations and applies the filters" do
+      shift
+      create(:shift, activity: create(:activity, organization: organization, title: "Recycling Drive"))
+      create(:shift, activity: create(:activity, title: "Someone Else's Drive"))
+      sign_in volunteer
+
+      get shifts_path, params: { search: { q: "recycling" } }
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("Recycling Drive", "1 shift found")
+      expect(response.body).not_to include("Someone Else")
+    end
+
+    it "shows a clear message for an invalid date range" do
+      sign_in volunteer
+
+      get shifts_path, params: { search: { from: "2026-12-10", to: "2026-12-01" } }
+
+      expect(response.body).to include("To must not be before the start date", "0 shifts found")
+    end
+
+    it "requires login" do
+      get shifts_path
+
+      expect(response).to redirect_to(new_user_session_path)
     end
   end
 end

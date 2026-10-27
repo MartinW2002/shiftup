@@ -5,6 +5,8 @@ class Signup < ApplicationRecord
   enum :status, { confirmed: 0, waitlisted: 1, cancelled: 2 }, validate: true
   enum :attendance, { unmarked: 0, present: 1, absent: 2 }, prefix: true, validate: true
 
+  validate :attendance_recordable, if: -> { attendance_changed? && !attendance_unmarked? }
+
   scope :active, -> { where.not(status: :cancelled) }
   # Waiting list order: first come, first served by join time (id breaks ties).
   scope :waitlist_order, -> { waitlisted.order(:created_at, :id) }
@@ -14,5 +16,15 @@ class Signup < ApplicationRecord
     return unless waitlisted?
 
     shift.signups.waitlisted.where("(signups.created_at, signups.id) < (?, ?)", created_at, id).count + 1
+  end
+
+  private
+
+  def attendance_recordable
+    if !confirmed?
+      errors.add(:attendance, "can only be recorded for confirmed volunteers")
+    elsif !shift.started?
+      errors.add(:attendance, "can only be recorded once the shift has started")
+    end
   end
 end

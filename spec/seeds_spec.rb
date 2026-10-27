@@ -51,6 +51,15 @@ RSpec.describe "Demo seed data" do
     expect(ShiftSignup.new(shift: tutoring, user: volunteer1).call.error).to start_with("This shift overlaps your confirmed shift for Lake Clean-up")
   end
 
+  it "includes a past shift with confirmed volunteers for the attendance demo" do
+    seed
+
+    past = Activity.find_by!(title: "Tree Planting").shifts.sole
+    expect(past).to be_started
+    expect(past.signups.confirmed.count).to eq(3)
+    expect(past.signups.first.update(attendance: :present)).to be true
+  end
+
   it "lets the demo accounts log in with the documented password" do
     seed
 

@@ -70,6 +70,19 @@ def demo_signup(activity, volunteer)
   ShiftSignup.new(shift: shift, user: volunteer).call if shift
 end
 
+# A shift that has already happened, with confirmed volunteers, so organizers can record
+# attendance (US3). Created directly because new shifts and sign-ups must be in the future.
+tree_planting = demo_activity(green, "Tree Planting",
+                              location: "Central Campus",
+                              description: "Plant saplings along the hillside path.",
+                              shifts: [])
+if tree_planting.shifts.none?
+  starts_at = base - 7.days
+  past_shift = tree_planting.shifts.new(starts_at: starts_at, ends_at: starts_at + 3.hours, capacity: 3)
+  past_shift.save!(validate: false)
+  volunteers.each { |volunteer| past_shift.signups.create!(user: volunteer, status: :confirmed) }
+end
+
 demo_signup(lake, volunteers[0])
 demo_signup(recycling, volunteers[1])
 demo_signup(recycling, volunteers[2])

@@ -21,3 +21,11 @@ end
 When("I fill in {string} with {string}") do |field, value|
   fill_in field, with: value
 end
+
+When("I select {string} from {string}") do |option, field|
+  select option, from: field
+end
+
+When("I check {string}") do |field|
+  check field
+end

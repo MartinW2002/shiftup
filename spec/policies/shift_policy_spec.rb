@@ -24,4 +24,19 @@ RSpec.describe ShiftPolicy, type: :policy do
   it "gives an organizer of another organization no access" do
     expect(policy_for(create(:membership, :organizer).user)).to forbid_all_actions
   end
+
+  describe "scope" do
+    it "returns the shifts of the user's organizations only" do
+      volunteer = create(:membership, organization: organization).user
+      create(:shift)
+
+      expect(Pundit.policy_scope!(volunteer, Shift)).to contain_exactly(shift)
+    end
+
+    it "returns nothing to visitors" do
+      shift
+
+      expect(Pundit.policy_scope!(nil, Shift)).to be_empty
+    end
+  end
 end

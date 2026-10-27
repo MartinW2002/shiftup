@@ -34,8 +34,11 @@
           <%= image_tag "/icon.svg", alt: "" %><span>ShiftUp</span>
         <% end %>
         <% if user_signed_in? %>
-          <%= nav_link "Organizations", organizations_path %>
-          <%= nav_link "My shifts", signups_path %>
+          <div class="nav-links">
+            <%= nav_link "Organizations", organizations_path %>
+            <%= nav_link "Find shifts", shifts_path %>
+            <%= nav_link "My shifts", signups_path %>
+          </div>
           <span class="nav-spacer"></span>
           <%= link_to current_user.name, edit_user_registration_path, class: "nav-link nav-user", title: "Account settings" %>
           <%= button_to "Log out", destroy_user_session_path, method: :delete, class: "button-ghost button-small" %>

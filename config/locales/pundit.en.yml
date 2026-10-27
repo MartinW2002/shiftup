@@ -20,3 +20,5 @@ en:
       destroy?: "Only this organization's organizers can manage its shifts."
     signup_policy:
       create?: "Join this organization before signing up for its shifts."
+      destroy?: "You can only cancel your own sign-ups."
+      mark_attendance?: "Only this organization's organizers can record attendance."

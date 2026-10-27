@@ -1,4 +1,10 @@
-<% if signup.nil? && !shift.started? && policy(Signup.new(shift: shift, user: current_user)).create? %>
-  <%= button_to shift.full? ? "Join waiting list" : "Sign up", shift_signup_path(shift),
-                class: shift.full? ? "button-secondary" : nil %>
+<% unless shift.started? %>
+  <% if signup %>
+    <%= button_to signup.confirmed? ? "Cancel sign-up" : "Leave waiting list", shift_signup_path(shift),
+                  method: :delete, class: "button-danger",
+                  form: { data: { turbo_confirm: signup.confirmed? ? "Cancel your place on this shift?" : "Leave the waiting list?" } } %>
+  <% elsif policy(Signup.new(shift: shift, user: current_user)).create? %>
+    <%= button_to shift.full? ? "Join waiting list" : "Sign up", shift_signup_path(shift),
+                  class: shift.full? ? "button-secondary" : nil %>
+  <% end %>
 <% end %>

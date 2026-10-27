@@ -16,4 +16,17 @@ module ShiftsHelper
       "#{shift.places_left} of #{shift.capacity} places left"
     end
   end
+
+  def attendance_badge(signup)
+    case signup.attendance
+    when "present" then tag.span("Present", class: "badge badge-confirmed")
+    when "absent" then tag.span("Absent", class: "badge badge-absent")
+    else tag.span("Not recorded", class: "badge")
+    end
+  end
+
+  def attendance_summary(signups)
+    counts = signups.map(&:attendance).tally
+    [ "#{counts.fetch('present', 0)} present", "#{counts.fetch('absent', 0)} absent", "#{counts.fetch('unmarked', 0)} not recorded" ].join(" · ")
+  end
 end

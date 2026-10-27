@@ -20,11 +20,11 @@ volunteers sign up within capacity, and cancellations are refilled from an order
 | Done | Organization isolation: only members see an organization's activities; direct URLs are denied |
 | Done | Organizers create, edit and delete their organization's activities and shifts |
 | Done | US1: sign up for a shift (capacity, waiting list with position, overlap check) |
-| Done | My shifts: a volunteer's upcoming confirmed shifts and waiting list positions |
+| Done | US2: cancel a sign-up or leave a waiting list; the next eligible volunteer is promoted |
+| Done | US3: organizers record attendance (present / absent) for confirmed volunteers |
+| Done | Find shifts: search by text and filter by organization, date range and free places |
+| Done | My shifts: upcoming shifts with waiting list positions, and past shifts with attendance |
 | Done | Organizers see each shift's confirmed volunteers and waiting list in order |
-| Planned | US2: cancel and promote the next eligible volunteer |
-| Planned | US3: organizers record attendance |
-| Planned | Search and filter shifts |
 
 ## Roles and business rules
 
@@ -38,13 +38,18 @@ volunteers sign up within capacity, and cancellations are refilled from an order
 | No overlap | A volunteer cannot hold two confirmed shifts that overlap in time, across all organizations. A sign-up (or waiting list entry) that overlaps a confirmed shift is refused with the clashing shift named. Shifts that touch (one ends when the next starts) do not overlap. |
 | Waiting list | First come, first served by join time (`signups.created_at`, ties broken by `id`). A volunteer has at most one active sign-up per shift and sees their position. |
 | Shift changes | Shifts must start in the future and end after they start. Their times cannot change once volunteers have signed up, and shifts or activities with sign-ups cannot be deleted. Shifts that have started accept no sign-ups. |
-| Promotion | A cancellation confirms the earliest waitlisted volunteer who has no overlapping confirmed shift. |
+| Promotion | When a place opens (a cancellation, or an organizer raising the capacity), the earliest waitlisted volunteer without an overlapping confirmed shift is confirmed. A skipped volunteer keeps their place in line. Places owed to the waiting list are filled before a newcomer's sign-up is handled, so nobody can jump the queue. |
+| Cancellation | Volunteers cancel only their own sign-ups, and only before the shift starts. The sign-up is kept with status `cancelled` as a record. |
+| Attendance | Recorded only for confirmed volunteers, only once the shift has started, and only by the organization's organizers. |
 | Authorization | Only the owning organization's organizers can edit activities, shifts or attendance, and only members can see or sign up for an organization's shifts. Enforced on the server with Pundit. |
 
-**Concurrency.** `ShiftSignup` ([app/services/shift_signup.rb](app/services/shift_signup.rb)) locks the shift row and then the
-volunteer's row (`SELECT ... FOR UPDATE`) while it checks the rules and inserts the sign-up. Simultaneous
-requests for the same shift, or by the same volunteer, therefore run one at a time. The concurrency tests in
-`spec/services/shift_signup_spec.rb` fail when the locks are removed.
+**Concurrency.** Sign-ups, cancellations and capacity changes go through `ShiftSignup`, `ShiftCancellation`
+and `ShiftPromotion` ([app/services/](app/services/)). Each locks the shift row and then the volunteers
+involved (`SELECT ... FOR UPDATE`) while it checks the rules and changes sign-ups. Simultaneous requests for
+the same shift, or by the same volunteer, therefore run one at a time. Volunteers are always locked in
+ascending id order after a single shift, so two requests can wait for each other but never deadlock. The
+concurrency tests in `spec/services/shift_signup_spec.rb` fail when the locks are removed or taken in
+waiting-list order.
 
 ## Runtime versions
 
@@ -107,7 +112,14 @@ Demo walkthrough with the seeded data:
   *Join waiting list* gets position 1.
 - **Overlap refused:** `volunteer1` signing up for the first "Weekend Maths Tutoring" shift (Harbour Tutoring Club)
   is refused, because it overlaps their confirmed Lake Clean-up shift.
-- **Access restriction:** `organizer.green` opening a Harbour Tutoring Club shift's edit URL is refused.
+- **Cancel and promote:** after `volunteer1` joins the Recycling Drive waiting list, `volunteer2` pressing
+  *Cancel sign-up* (on *My shifts*) confirms `volunteer1` automatically.
+- **Attendance:** `organizer.green` opens the past "Tree Planting" shift and marks volunteers *Present* or *Absent*.
+  Volunteers see the result under *Past shifts* on *My shifts*.
+- **Search:** *Find shifts* searches the upcoming shifts of the user's organizations by text, organization,
+  dates and free places.
+- **Access restriction:** `organizer.green` opening a Harbour Tutoring Club shift's edit URL is refused, as is
+  `organizer.harbour` trying to change Tree Planting attendance.
 
 ## Tests
 
@@ -153,6 +165,8 @@ RSpec examples, the implementation, and the refactoring that followed._
 - No password reset. The demo deployment does not send email, so Devise's password recovery is turned off.
 - Demo shifts are dated relative to the day the seeds run (the coming Saturday). Each deploy runs the seeds,
   which add a fresh set of shifts to an activity only once all of its demo shifts are in the past.
+- Volunteers are not notified when they are promoted from a waiting list; they see it on *My shifts*.
+- Organizers cannot remove a volunteer from a shift; volunteers cancel their own sign-ups.
 - _TODO_
 
 ## Acknowledgements
