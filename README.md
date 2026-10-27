@@ -1,5 +1,7 @@
 # ShiftUp
 
+[![CI](https://github.com/MartinW2002/shiftup/actions/workflows/ci.yml/badge.svg)](https://github.com/MartinW2002/shiftup/actions/workflows/ci.yml)
+
 Volunteer coordination for student organizations. Organizations publish activities and shifts,
 volunteers sign up within capacity, and cancellations are refilled from an ordered waiting list.
 
@@ -7,24 +9,32 @@ volunteers sign up within capacity, and cancellations are refilled from an order
 > Not an official CUHK service. All organizations, people and events are fictional.
 
 - **Members:** Olha Mudryk, Martin Wiesner
-- **Deployed URL:** https://shiftup.onrender.com
-- **CI run for the submitted version:** _TODO: link to the GitHub Actions run_
+- **Topic:** Option E, CUHK volunteer coordination
+- **Deployed URL:** https://shiftup.onrender.com (free Render instance: the first request after a quiet period can take about a minute)
+- **CI run for the submitted version:** _TODO at submission: link the GitHub Actions run of the graded commit_.
+  All runs: https://github.com/MartinW2002/shiftup/actions/workflows/ci.yml
 
 ## Features
 
-| Status | Feature |
-| --- | --- |
-| Done | Accounts (Devise): sign up, log in, log out |
-| Done | Organizations with per-organization roles (volunteer, organizer) |
-| Done | Join any organization as a volunteer from the organizations page (organizer roles are never self-assigned) |
-| Done | Organization isolation: only members see an organization's activities; direct URLs are denied |
-| Done | Organizers create, edit and delete their organization's activities and shifts |
-| Done | US1: sign up for a shift (capacity, waiting list with position, overlap check) |
-| Done | US2: cancel a sign-up or leave a waiting list; the next eligible volunteer is promoted |
-| Done | US3: organizers record attendance (present / absent) for confirmed volunteers |
-| Done | Find shifts: search by text and filter by organization, date range and free places |
-| Done | My shifts: upcoming shifts with waiting list positions, and past shifts with attendance |
-| Done | Organizers see each shift's confirmed volunteers and waiting list in order |
+**Volunteers**
+
+- Join any organization as a volunteer (organizer roles are never self-assigned)
+- Sign up for a shift within capacity, or join its waiting list and see your position; overlapping shifts are refused (US1)
+- Cancel a sign-up or leave a waiting list; the next eligible volunteer is promoted (US2)
+- Find shifts by text, organization, date range and free places
+- *My shifts*: upcoming shifts with waiting list positions, and past shifts with attendance
+
+**Organizers** (for their own organization only)
+
+- Create, edit and delete activities and shifts
+- See each shift's confirmed volunteers and waiting list in order
+- Record attendance (present / absent) for confirmed volunteers (US3)
+
+**Everyone**
+
+- Accounts (Devise): sign up, log in, log out, edit your details
+- Roles are granted per organization, and an organization's records are visible only to its members,
+  including through direct URLs
 
 ## Roles and business rules
 
@@ -140,7 +150,20 @@ bundle exec rspec
 COVERAGE_CHECK=1 bundle exec cucumber   # fails if merged line coverage is below 80%
 ```
 
-Current coverage: _TODO: fill in for the submitted version_.
+Current coverage (commit `2ad0280`): **100% of lines (472/472) and 100% of branches (131/131)**, from
+223 RSpec examples and 31 Cucumber scenarios. Each CI run uploads the HTML report as the `coverage` artifact.
+
+What the suites cover:
+
+| Area | Where |
+| --- | --- |
+| Core stories US1–US3 | `features/sign_up_for_shift.feature`, `features/cancel_and_promote.feature`, `features/manage_attendance.feature` |
+| Business-rule failures (full shift, overlap, duplicates, started shifts, capacity, attendance) | `spec/services/`, `spec/models/` |
+| Concurrency (capacity, overlap, deadlocks) | `spec/services/shift_signup_spec.rb` ("under concurrent requests") |
+| Permissions, including direct URLs | `spec/policies/`, `spec/requests/`, `features/manage_shifts.feature` |
+| Organization isolation | `features/organization_access.feature`, `spec/requests/organizations_spec.rb`, `spec/policies/shift_policy_spec.rb` |
+| Search and filters | `features/find_shifts.feature`, `spec/queries/shift_search_spec.rb` |
+| Demo data | `spec/seeds_spec.rb` |
 
 ## Continuous integration
 
@@ -157,8 +180,26 @@ Required environment variables: `DATABASE_URL` (Neon connection string) and `SEC
 
 ## TDD/BDD iteration
 
-_TODO: describe one iteration, e.g. US2 promotion: the Cucumber scenario written first, the failing
-RSpec examples, the implementation, and the refactoring that followed._
+Example: the capacity rule of **US1** ("confirmed sign-ups never exceed capacity, even under concurrent
+requests"), and how **US2** forced a second iteration on it.
+
+1. **Acceptance first (BDD).** The US1 acceptance criteria were written as the scenarios in
+   `features/sign_up_for_shift.feature` (free place → confirmed; full shift → waiting list with position;
+   overlap → refused) before `ShiftSignup` and its pages existed.
+2. **Unit level (TDD).** `spec/services/shift_signup_spec.rb` describes each rule and refusal message.
+   Sequential examples cannot show the "concurrent requests" part of the rule, so the example "never
+   confirms more volunteers than the capacity" runs four sign-ups for a one-place shift in parallel threads,
+   pausing each request between the capacity check and the insert so that a race shows up reliably.
+3. **Red and green.** Without row locks this example fails with *expected 1, got 4* confirmed volunteers,
+   and the overlap example (one volunteer, two overlapping shifts at once) with *expected 1, got 2*.
+   `ShiftSignup` locks the shift and the volunteer (`SELECT ... FOR UPDATE`) for the whole check-and-insert,
+   which makes both pass (commit `37e3568`).
+4. **Next iteration (US2).** Promotion locks several waiting volunteers at once. A new example lets two
+   cancellations promote the same two volunteers in opposite waiting-list order; locking them one at a time
+   in waiting-list order makes it fail with PostgreSQL's *deadlock detected*. The fix (one shift, then
+   volunteers in ascending id order) moved the locking into `ShiftPromotion`, which sign-ups, cancellations
+   and capacity changes now share. The US2 scenarios in `features/cancel_and_promote.feature` were added,
+   and the US1 scenarios and examples stayed green (commit `a282a1b`).
 
 ## Known limitations
 
@@ -167,11 +208,16 @@ RSpec examples, the implementation, and the refactoring that followed._
   which add a fresh set of shifts to an activity only once all of its demo shifts are in the past.
 - Volunteers are not notified when they are promoted from a waiting list; they see it on *My shifts*.
 - Organizers cannot remove a volunteer from a shift; volunteers cancel their own sign-ups.
-- _TODO_
+- There is no page for creating organizations or granting the organizer role. Both come from the seeds
+  (or the Rails console); new accounts join organizations as volunteers.
+- Members cannot leave an organization, and an organizer who deletes their account can leave an
+  organization without organizers.
+- Deleting an account also deletes that user's past attendance records.
+- Times are entered and shown in Hong Kong time only. *Find shifts* has no pagination.
 
 ## Acknowledgements
 
-- Claude Code has been used to generator code for this project using model Opus 5.5.
+- Claude Code has been used to generate code for this project using model Opus 5.5.
 - Built on Ruby on Rails and the libraries listed in the `Gemfile`, notably Devise (authentication),
   Pundit (authorization), RSpec, Cucumber, Capybara, FactoryBot, Shoulda Matchers and SimpleCov.
 - Application skeleton generated with `rails new`; Devise views generated with `rails generate devise:views`.
