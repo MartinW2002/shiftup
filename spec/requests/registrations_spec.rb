@@ -43,4 +43,39 @@ RSpec.describe "Registrations", type: :request do
 
     expect(response.body).not_to include("Forgot your password?")
   end
+
+  describe "deleting the account" do
+    let(:user) { create(:user) }
+
+    before { sign_in user }
+
+    it "deletes the account and signs the user out" do
+      create(:signup, :cancelled, user: user)
+      create(:signup, shift: create(:shift, :past), user: user)
+
+      delete user_registration_path
+
+      expect(response).to redirect_to(root_path)
+      expect(flash[:notice]).to eq("Bye! Your account has been successfully cancelled. We hope to see you again soon.")
+      expect(User.exists?(user.id)).to be false
+    end
+
+    it "is refused while the user has an upcoming shift, so the place can be passed on" do
+      create(:signup, user: user)
+
+      delete user_registration_path
+
+      expect(response).to redirect_to(edit_user_registration_path)
+      expect(flash[:alert]).to eq("Cancel your upcoming shifts and waiting list places before deleting your account")
+      expect(User.exists?(user.id)).to be true
+    end
+
+    it "is refused while the user is on an upcoming waiting list" do
+      create(:signup, :waitlisted, user: user)
+
+      delete user_registration_path
+
+      expect(User.exists?(user.id)).to be true
+    end
+  end
 end

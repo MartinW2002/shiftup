@@ -9,7 +9,7 @@ class Shift < ApplicationRecord
   validates :starts_at, :ends_at, presence: true
   validates :capacity, presence: true, numericality: { only_integer: true, greater_than: 0 }
   validate :ends_after_start
-  validate :starts_in_future, on: :create
+  validate :starts_in_future, if: -> { new_record? || starts_at_changed? }
   validate :capacity_covers_confirmed, on: :update
   validate :times_fixed_after_signups, on: :update
 
@@ -23,6 +23,10 @@ class Shift < ApplicationRecord
 
   def started?
     starts_at <= Time.current
+  end
+
+  def ended?
+    ends_at <= Time.current
   end
 
   def confirmed_count

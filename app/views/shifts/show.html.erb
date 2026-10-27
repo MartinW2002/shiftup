@@ -10,7 +10,7 @@
 
 <div class="card card-row">
   <p>
-    <%= @shift.started? ? "This shift has started." : places_text(@shift) %>
+    <%= places_text(@shift) %>
     <% if @my_signup %>
       <%= signup_status_badge(@my_signup) %>
       <%= attendance_badge(@my_signup) if @shift.started? && @my_signup.confirmed? %>

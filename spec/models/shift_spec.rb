@@ -101,6 +101,17 @@ RSpec.describe Shift, type: :model do
       expect(shift.errors[:base]).to include("Times cannot be changed after volunteers have signed up")
     end
 
+    it "cannot move the start into the past" do
+      expect(shift.update(starts_at: 1.hour.ago)).to be false
+      expect(shift.errors[:starts_at]).to include("must be in the future")
+    end
+
+    it "can still change the capacity of a shift that has started" do
+      started = create(:shift, :past, capacity: 2)
+
+      expect(started.update(capacity: 3)).to be true
+    end
+
     it "can move the times while nobody is signed up" do
       create(:signup, :cancelled, shift: shift)
 

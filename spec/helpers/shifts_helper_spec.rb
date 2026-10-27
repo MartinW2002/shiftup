@@ -26,5 +26,10 @@ RSpec.describe ShiftsHelper, type: :helper do
       create(:signup, :waitlisted, shift: shift)
       expect(helper.places_text(shift)).to eq("Full · 1 person waiting")
     end
+
+    it "says when a shift is in progress or has ended" do
+      expect(helper.places_text(build(:shift, starts_at: 1.hour.ago, ends_at: 1.hour.from_now))).to eq("In progress")
+      expect(helper.places_text(build(:shift, starts_at: 3.hours.ago, ends_at: 1.hour.ago))).to eq("Ended")
+    end
   end
 end

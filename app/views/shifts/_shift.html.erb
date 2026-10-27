@@ -5,13 +5,7 @@
     <% if signup %>
       <%= signup_status_badge(signup) %>
     <% end %>
-    <p class="muted">
-      <% if shift.started? %>
-        Started
-      <% else %>
-        <%= places_text(shift) %>
-      <% end %>
-    </p>
+    <p class="muted"><%= places_text(shift) %></p>
   </div>
   <%= render "shifts/signup_action", shift: shift, signup: signup %>
 </li>

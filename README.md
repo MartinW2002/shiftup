@@ -39,7 +39,7 @@ volunteers sign up within capacity, and cancellations are refilled from an order
 | Waiting list | First come, first served by join time (`signups.created_at`, ties broken by `id`). A volunteer has at most one active sign-up per shift and sees their position. |
 | Shift changes | Shifts must start in the future and end after they start. Their times cannot change once volunteers have signed up, and shifts or activities with sign-ups cannot be deleted. Shifts that have started accept no sign-ups. |
 | Promotion | When a place opens (a cancellation, or an organizer raising the capacity), the earliest waitlisted volunteer without an overlapping confirmed shift is confirmed. A skipped volunteer keeps their place in line. Places owed to the waiting list are filled before a newcomer's sign-up is handled, so nobody can jump the queue. |
-| Cancellation | Volunteers cancel only their own sign-ups, and only before the shift starts. The sign-up is kept with status `cancelled` as a record. |
+| Cancellation | Volunteers cancel only their own sign-ups, and only before the shift starts. The sign-up is kept with status `cancelled` as a record. An account cannot be deleted while it holds upcoming shifts or waiting list places, so those places are passed on first. |
 | Attendance | Recorded only for confirmed volunteers, only once the shift has started, and only by the organization's organizers. |
 | Authorization | Only the owning organization's organizers can edit activities, shifts or attendance, and only members can see or sign up for an organization's shifts. Enforced on the server with Pundit. |
 

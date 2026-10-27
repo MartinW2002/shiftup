@@ -9,7 +9,11 @@ module ShiftsHelper
   end
 
   def places_text(shift)
-    if shift.full?
+    if shift.ended?
+      "Ended"
+    elsif shift.started?
+      "In progress"
+    elsif shift.full?
       waiting = shift.waitlist_count
       "Full · #{pluralize(waiting, 'person')} waiting"
     else
