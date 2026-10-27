@@ -1,0 +1,25 @@
+<%= form_with model: shift.new_record? ? [ shift.activity, shift ] : shift, class: "card form-card" do |f| %>
+  <%= render "shared/errors", record: shift %>
+
+  <div class="field">
+    <%= f.label :starts_at %>
+    <%= f.datetime_field :starts_at, required: true %>
+    <span class="field-hint">Hong Kong time</span>
+  </div>
+
+  <div class="field">
+    <%= f.label :ends_at %>
+    <%= f.datetime_field :ends_at, required: true %>
+  </div>
+
+  <div class="field">
+    <%= f.label :capacity %>
+    <%= f.number_field :capacity, min: 1, step: 1, required: true %>
+    <span class="field-hint">Volunteers beyond this number join the waiting list.</span>
+  </div>
+
+  <div class="actions">
+    <%= f.submit %>
+    <%= link_to "Cancel", shift.new_record? ? shift.activity : shift, class: "button button-ghost" %>
+  </div>
+<% end %>

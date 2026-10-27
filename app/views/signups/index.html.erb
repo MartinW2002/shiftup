@@ -1,0 +1,21 @@
+<% content_for :title, "My shifts · ShiftUp" %>
+
+<h1>My shifts</h1>
+
+<% if @signups.any? %>
+  <ul class="card-list">
+    <% @signups.each do |signup| %>
+      <% shift = signup.shift %>
+      <li>
+        <%= link_to shift, class: "card card-link" do %>
+          <strong><%= shift.activity.title %></strong>
+          <%= signup_status_badge(signup) %>
+          <p><%= shift.time_range_text %></p>
+          <p class="muted"><%= shift.activity.organization.name %><% if shift.activity.location.present? %> · <%= shift.activity.location %><% end %></p>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+<% else %>
+  <p class="muted">You have no upcoming shifts. <%= link_to "Browse your organizations", organizations_path %> to find one.</p>
+<% end %>

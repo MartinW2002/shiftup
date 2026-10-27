@@ -1,0 +1,53 @@
+<% activity = @shift.activity %>
+<% content_for :title, "#{activity.title} shift · ShiftUp" %>
+
+<p class="breadcrumb"><%= link_to activity.organization.name, activity.organization %> <span class="breadcrumb-separator">/</span> <%= link_to activity.title, activity %></p>
+<h1><%= activity.title %></h1>
+<p class="lead"><%= @shift.time_range_text %></p>
+<% if activity.location.present? %>
+  <p class="muted"><%= activity.location %></p>
+<% end %>
+
+<div class="card card-row">
+  <p>
+    <%= @shift.started? ? "This shift has started." : places_text(@shift) %>
+    <% if @my_signup %>
+      <%= signup_status_badge(@my_signup) %>
+    <% end %>
+  </p>
+  <%= render "shifts/signup_action", shift: @shift, signup: @my_signup %>
+</div>
+
+<% if policy(@shift).update? %>
+  <div class="actions">
+    <%= link_to "Edit shift", edit_shift_path(@shift), class: "button button-secondary" %>
+    <%= button_to "Delete shift", @shift, method: :delete, class: "button-danger",
+                  form: { data: { turbo_confirm: "Delete this shift?" } } %>
+  </div>
+
+  <h2>Confirmed (<%= @confirmed.size %> of <%= @shift.capacity %>)</h2>
+  <div class="card">
+    <% if @confirmed.any? %>
+      <ul class="roster" id="confirmed-volunteers">
+        <% @confirmed.each do |signup| %>
+          <li><span><%= signup.user.name %></span> <span class="muted"><%= signup.user.email %></span></li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="muted">Nobody has signed up yet.</p>
+    <% end %>
+  </div>
+
+  <h2>Waiting list (<%= @waitlist.size %>)</h2>
+  <div class="card">
+    <% if @waitlist.any? %>
+      <ol class="roster" id="waiting-list">
+        <% @waitlist.each_with_index do |signup, index| %>
+          <li><span class="roster-number"><%= index + 1 %></span><span><%= signup.user.name %></span> <span class="muted">joined <%= l(signup.created_at, format: :shift) %></span></li>
+        <% end %>
+      </ol>
+    <% else %>
+      <p class="muted">Nobody is waiting.</p>
+    <% end %>
+  </div>
+<% end %>

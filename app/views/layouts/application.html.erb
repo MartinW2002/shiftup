@@ -30,16 +30,19 @@
 
     <header class="site-header">
       <nav class="container nav">
-        <%= link_to "ShiftUp", root_path, class: "brand" %>
+        <%= link_to root_path, class: "brand" do %>
+          <%= image_tag "/icon.svg", alt: "" %><span>ShiftUp</span>
+        <% end %>
         <% if user_signed_in? %>
-          <%= link_to "Organizations", organizations_path %>
+          <%= nav_link "Organizations", organizations_path %>
+          <%= nav_link "My shifts", signups_path %>
           <span class="nav-spacer"></span>
-          <span class="muted"><%= current_user.name %></span>
-          <%= button_to "Log out", destroy_user_session_path, method: :delete, class: "link-button" %>
+          <%= link_to current_user.name, edit_user_registration_path, class: "nav-link nav-user", title: "Account settings" %>
+          <%= button_to "Log out", destroy_user_session_path, method: :delete, class: "button-ghost button-small" %>
         <% else %>
           <span class="nav-spacer"></span>
-          <%= link_to "Log in", new_user_session_path %>
-          <%= link_to "Sign up", new_user_registration_path %>
+          <%= link_to "Log in", new_user_session_path, class: "button button-ghost button-small" %>
+          <%= link_to "Sign up", new_user_registration_path, class: "button button-small" %>
         <% end %>
       </nav>
     </header>

@@ -1,0 +1,23 @@
+<%= form_with model: activity.new_record? ? [ activity.organization, activity ] : activity, class: "card form-card" do |f| %>
+  <%= render "shared/errors", record: activity %>
+
+  <div class="field">
+    <%= f.label :title %>
+    <%= f.text_field :title, required: true, maxlength: 150 %>
+  </div>
+
+  <div class="field">
+    <%= f.label :location %>
+    <%= f.text_field :location, maxlength: 150 %>
+  </div>
+
+  <div class="field">
+    <%= f.label :description %>
+    <%= f.text_area :description, rows: 4, maxlength: 2000 %>
+  </div>
+
+  <div class="actions">
+    <%= f.submit %>
+    <%= link_to "Cancel", activity.new_record? ? activity.organization : activity, class: "button button-ghost" %>
+  </div>
+<% end %>

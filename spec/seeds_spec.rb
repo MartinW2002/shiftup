@@ -38,6 +38,19 @@ RSpec.describe "Demo seed data" do
     expect(lake.overlaps?(tutoring)).to be true
   end
 
+  it "sets up the sign-ups the demo relies on" do
+    seed
+
+    volunteer1 = User.find_by!(email: "volunteer1@example.com")
+    lake = Activity.find_by!(title: "Lake Clean-up").shifts.upcoming.first
+    tutoring = Activity.find_by!(title: "Weekend Maths Tutoring").shifts.upcoming.first
+    recycling = Activity.find_by!(title: "Recycling Drive").shifts.upcoming.first
+
+    expect(lake.signups.find_by(user: volunteer1)).to be_confirmed
+    expect(recycling).to be_full
+    expect(ShiftSignup.new(shift: tutoring, user: volunteer1).call.error).to start_with("This shift overlaps your confirmed shift for Lake Clean-up")
+  end
+
   it "lets the demo accounts log in with the documented password" do
     seed
 
@@ -47,7 +60,7 @@ RSpec.describe "Demo seed data" do
   it "does not duplicate anything when run again" do
     seed
 
-    expect { seed }.not_to change { [ Organization.count, User.count, Membership.count, Activity.count, Shift.count ] }
+    expect { seed }.not_to change { [ Organization.count, User.count, Membership.count, Activity.count, Shift.count, Signup.count ] }
   end
 
   it "does not add shifts to an activity that still has upcoming ones when a later week's deploy seeds again" do
@@ -68,5 +81,6 @@ RSpec.describe "Demo seed data" do
     seed
 
     expect(Shift.upcoming.count).to eq(5)
+    expect(Signup.joins(:shift).merge(Shift.upcoming).count).to eq(3)
   end
 end

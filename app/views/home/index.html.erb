@@ -3,6 +3,12 @@
 <section class="hero">
   <h1>ShiftUp</h1>
   <p class="lead">Volunteer coordination for student organizations: publish shifts, sign up within capacity, and refill cancellations from a fair waiting list.</p>
+  <% unless user_signed_in? %>
+    <div class="actions">
+      <%= link_to "Create an account", new_user_registration_path, class: "button" %>
+      <%= link_to "Log in", new_user_session_path, class: "button button-secondary" %>
+    </div>
+  <% end %>
 </section>
 
 <% if user_signed_in? %>
@@ -19,8 +25,9 @@
       <% end %>
     </ul>
   <% else %>
-    <p class="muted">You are not a member of any organization yet. <%= link_to "Browse organizations", organizations_path %> to join one.</p>
+    <div class="card">
+      <p class="muted">You are not a member of any organization yet.</p>
+      <div class="actions"><%= link_to "Browse organizations", organizations_path, class: "button" %></div>
+    </div>
   <% end %>
-<% else %>
-  <p><%= link_to "Log in", new_user_session_path %> or <%= link_to "create an account", new_user_registration_path %> to get started.</p>
 <% end %>

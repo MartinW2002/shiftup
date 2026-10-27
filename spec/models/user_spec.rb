@@ -21,4 +21,13 @@ RSpec.describe User, type: :model do
       expect(user.member_of?(other_society)).to be false
     end
   end
+
+  it "lists only shifts the user is confirmed for" do
+    user = create(:user)
+    confirmed = create(:signup, user: user).shift
+    create(:signup, :waitlisted, user: user)
+    create(:signup, :cancelled, user: user)
+
+    expect(user.confirmed_shifts).to contain_exactly(confirmed)
+  end
 end

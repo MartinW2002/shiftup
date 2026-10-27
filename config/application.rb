@@ -33,7 +33,8 @@ module Shiftup
     # These settings can be overridden in specific environments using the files
     # in config/environments, which are processed later.
     #
-    # config.time_zone = "Central Time (US & Canada)"
+    # Shift times are entered and shown in Hong Kong time.
+    config.time_zone = "Hong Kong"
     # config.eager_load_paths << Rails.root.join("extras")
 
     # Don't generate system test files.

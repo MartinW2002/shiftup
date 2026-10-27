@@ -47,11 +47,11 @@ end
 
 base = Time.zone.now.next_occurring(:saturday).change(hour: 9)
 
-demo_activity(green, "Lake Clean-up",
+lake = demo_activity(green, "Lake Clean-up",
               location: "Weiyuan Lake",
               description: "Collect litter around the lake. Gloves and bags provided.",
               shifts: [ [ base, 2, 3 ], [ base + 2.hours, 2, 3 ] ])
-demo_activity(green, "Recycling Drive",
+recycling = demo_activity(green, "Recycling Drive",
               location: "University Station",
               description: "Sort donated items and help visitors at the collection point.",
               shifts: [ [ base + 1.day, 3, 2 ] ])
@@ -60,4 +60,18 @@ demo_activity(harbour, "Weekend Maths Tutoring",
               description: "Help secondary students with homework.",
               shifts: [ [ base + 1.hour, 2, 2 ], [ base + 7.days, 2, 2 ] ])
 
-puts "Seeded #{Organization.count} organizations, #{User.count} users, #{Shift.count} shifts."
+# Demo sign-ups go through ShiftSignup, so they follow the same rules as real ones and
+# re-running the seeds is refused as a duplicate sign-up instead of adding rows.
+#  - volunteer1 is confirmed for the first Lake Clean-up shift, which overlaps the
+#    first Weekend Maths Tutoring shift: signing up for that one shows the overlap rule.
+#  - The Recycling Drive shift is full, so anyone else joins its waiting list.
+def demo_signup(activity, volunteer)
+  shift = activity.shifts.upcoming.first
+  ShiftSignup.new(shift: shift, user: volunteer).call if shift
+end
+
+demo_signup(lake, volunteers[0])
+demo_signup(recycling, volunteers[1])
+demo_signup(recycling, volunteers[2])
+
+puts "Seeded #{Organization.count} organizations, #{User.count} users, #{Shift.count} shifts, #{Signup.count} sign-ups."

@@ -4,3 +4,19 @@ en:
     organization_policy:
       show?: "Only members can see this organization's activities. Join it from the organizations page."
       join?: "You are already a member of this organization."
+    activity_policy:
+      show?: "Only members can see this organization's activities. Join it from the organizations page."
+      new?: "Only this organization's organizers can manage its activities."
+      create?: "Only this organization's organizers can manage its activities."
+      edit?: "Only this organization's organizers can manage its activities."
+      update?: "Only this organization's organizers can manage its activities."
+      destroy?: "Only this organization's organizers can manage its activities."
+    shift_policy:
+      show?: "Only members can see this organization's shifts. Join it from the organizations page."
+      new?: "Only this organization's organizers can manage its shifts."
+      create?: "Only this organization's organizers can manage its shifts."
+      edit?: "Only this organization's organizers can manage its shifts."
+      update?: "Only this organization's organizers can manage its shifts."
+      destroy?: "Only this organization's organizers can manage its shifts."
+    signup_policy:
+      create?: "Join this organization before signing up for its shifts."

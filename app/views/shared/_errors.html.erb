@@ -1,0 +1,10 @@
+<% if record.errors.any? %>
+  <div class="flash flash-alert" role="alert">
+    <p><strong><%= pluralize(record.errors.count, "error") %> prevented this <%= record.model_name.human.downcase %> from being saved:</strong></p>
+    <ul>
+      <% record.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>

@@ -1,0 +1,4 @@
+<% if signup.nil? && !shift.started? && policy(Signup.new(shift: shift, user: current_user)).create? %>
+  <%= button_to shift.full? ? "Join waiting list" : "Sign up", shift_signup_path(shift),
+                class: shift.full? ? "button-secondary" : nil %>
+<% end %>

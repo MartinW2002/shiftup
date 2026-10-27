@@ -1,0 +1,17 @@
+<% signup = my_signups[shift.id] %>
+<li class="card card-row" id="<%= dom_id(shift) %>">
+  <div>
+    <%= link_to shift.time_range_text, shift, class: "shift-time" %>
+    <% if signup %>
+      <%= signup_status_badge(signup) %>
+    <% end %>
+    <p class="muted">
+      <% if shift.started? %>
+        Started
+      <% else %>
+        <%= places_text(shift) %>
+      <% end %>
+    </p>
+  </div>
+  <%= render "shifts/signup_action", shift: shift, signup: signup %>
+</li>

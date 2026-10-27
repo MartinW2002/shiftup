@@ -1,0 +1,110 @@
+require 'rails_helper'
+
+RSpec.describe "Signups", type: :request do
+  let(:organization) { create(:organization) }
+  let(:activity) { create(:activity, organization: organization, title: "Lake Clean-up") }
+  let(:shift) { create(:shift, activity: activity, capacity: 1) }
+  let(:volunteer) { create(:membership, organization: organization).user }
+
+  describe "POST /shifts/:shift_id/signup" do
+    it "requires login" do
+      post shift_signup_path(shift)
+
+      expect(response).to redirect_to(new_user_session_path)
+      expect(Signup.count).to eq(0)
+    end
+
+    it "confirms a member and returns to the activity" do
+      sign_in volunteer
+
+      post shift_signup_path(shift)
+
+      expect(response).to redirect_to(activity_path(activity))
+      expect(flash[:notice]).to eq("You are signed up for this shift.")
+      expect(shift.signups.find_by(user: volunteer)).to be_confirmed
+    end
+
+    it "returns to the page the volunteer came from" do
+      sign_in volunteer
+
+      post shift_signup_path(shift), headers: { "HTTP_REFERER" => shift_url(shift) }
+
+      expect(response).to redirect_to(shift_url(shift))
+    end
+
+    it "puts a member on the waiting list of a full shift" do
+      create(:signup, shift: shift)
+      sign_in volunteer
+
+      post shift_signup_path(shift)
+
+      expect(flash[:notice]).to eq("This shift is full. You are number 1 on the waiting list.")
+      expect(shift.signups.find_by(user: volunteer)).to be_waitlisted
+    end
+
+    it "shows the reason when a business rule refuses the sign-up" do
+      sign_in volunteer
+      post shift_signup_path(shift)
+
+      post shift_signup_path(shift)
+
+      expect(flash[:alert]).to eq("You are already signed up for this shift.")
+      expect(shift.signups.count).to eq(1)
+    end
+
+    it "refuses a non-member, even through a direct request" do
+      sign_in create(:membership, :organizer).user
+
+      post shift_signup_path(shift)
+
+      expect(flash[:alert]).to eq("Join this organization before signing up for its shifts.")
+      expect(Signup.count).to eq(0)
+    end
+
+    it "always signs up the logged-in user, whatever the parameters say" do
+      other = create(:membership, organization: organization).user
+      sign_in volunteer
+
+      post shift_signup_path(shift), params: { user_id: other.id, signup: { user_id: other.id, status: "confirmed" } }
+
+      expect(Signup.sole.user).to eq(volunteer)
+    end
+  end
+
+  describe "GET /my/shifts" do
+    it "lists the user's upcoming sign-ups only" do
+      sign_in volunteer
+      create(:signup, shift: shift, user: volunteer)
+      create(:signup, :cancelled, shift: create(:shift, activity: create(:activity, title: "Cancelled Shift")), user: volunteer)
+      create(:signup, shift: create(:shift, :past, activity: create(:activity, title: "Past Shift")), user: volunteer)
+      create(:signup, shift: create(:shift, activity: create(:activity, title: "Someone Else's Shift")))
+
+      get signups_path
+
+      expect(response.body).to include("Lake Clean-up", "Confirmed")
+      expect(response.body).not_to include("Cancelled Shift", "Past Shift", "Someone Else")
+    end
+
+    it "shows the waiting list position" do
+      sign_in volunteer
+      create(:signup, shift: shift)
+      create(:signup, :waitlisted, shift: shift)
+      create(:signup, :waitlisted, shift: shift, user: volunteer)
+
+      get signups_path
+
+      expect(response.body).to include("Waiting list #2")
+    end
+
+    it "lists upcoming shifts soonest first" do
+      sign_in volunteer
+      later = create(:shift, activity: create(:activity, title: "Later Shift"), starts_at: 5.days.from_now)
+      sooner = create(:shift, activity: create(:activity, title: "Sooner Shift"), starts_at: 2.days.from_now)
+      [ later, sooner ].each { |s| create(:signup, shift: s, user: volunteer) }
+
+      get signups_path
+
+      expect(response.body.index("Sooner Shift")).to be < response.body.index("Later Shift")
+    end
+  end
+end

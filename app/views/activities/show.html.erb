@@ -1,0 +1,33 @@
+<% content_for :title, "#{@activity.title} · ShiftUp" %>
+
+<p class="breadcrumb"><%= link_to @activity.organization.name, @activity.organization %></p>
+<h1><%= @activity.title %></h1>
+<% if @activity.location.present? %>
+  <p class="muted"><%= @activity.location %></p>
+<% end %>
+<% if @activity.description.present? %>
+  <p><%= @activity.description %></p>
+<% end %>
+
+<% if policy(@activity).update? %>
+  <div class="actions">
+    <%= link_to "Edit activity", edit_activity_path(@activity), class: "button button-secondary" %>
+    <%= button_to "Delete activity", @activity, method: :delete, class: "button-danger",
+                  form: { data: { turbo_confirm: "Delete #{@activity.title} and all its shifts?" } } %>
+  </div>
+<% end %>
+
+<div class="section-header">
+  <h2>Shifts</h2>
+  <% if policy(Shift.new(activity: @activity)).create? %>
+    <%= link_to "Add shift", new_activity_shift_path(@activity), class: "button" %>
+  <% end %>
+</div>
+
+<% if @shifts.any? %>
+  <ul class="card-list">
+    <%= render partial: "shifts/shift", collection: @shifts, locals: { my_signups: @my_signups } %>
+  </ul>
+<% else %>
+  <p class="muted">No shifts yet.</p>
+<% end %>

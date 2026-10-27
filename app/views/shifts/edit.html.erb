@@ -1,0 +1,6 @@
+<% content_for :title, "Edit shift · ShiftUp" %>
+
+<p class="breadcrumb"><%= link_to @shift.activity.organization.name, @shift.activity.organization %> <span class="breadcrumb-separator">/</span> <%= link_to @shift.activity.title, @shift.activity %></p>
+<h1>Edit shift</h1>
+
+<%= render "form", shift: @shift %>

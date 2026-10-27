@@ -18,8 +18,10 @@ volunteers sign up within capacity, and cancellations are refilled from an order
 | Done | Organizations with per-organization roles (volunteer, organizer) |
 | Done | Join any organization as a volunteer from the organizations page (organizer roles are never self-assigned) |
 | Done | Organization isolation: only members see an organization's activities; direct URLs are denied |
-| Planned | Activities and shifts managed by organizers |
-| Planned | US1: sign up for a shift (capacity, waiting list, overlap check) |
+| Done | Organizers create, edit and delete their organization's activities and shifts |
+| Done | US1: sign up for a shift (capacity, waiting list with position, overlap check) |
+| Done | My shifts: a volunteer's upcoming confirmed shifts and waiting list positions |
+| Done | Organizers see each shift's confirmed volunteers and waiting list in order |
 | Planned | US2: cancel and promote the next eligible volunteer |
 | Planned | US3: organizers record attendance |
 | Planned | Search and filter shifts |
@@ -32,11 +34,17 @@ volunteers sign up within capacity, and cancellations are refilled from an order
 
 | Rule | Description |
 | --- | --- |
-| Capacity | Confirmed sign-ups never exceed a shift's capacity, even under concurrent requests. |
-| No overlap | A volunteer cannot hold two confirmed shifts that overlap in time. Shifts that touch (one ends when the next starts) do not overlap. |
-| Waiting list | First come, first served by join time (`signups.created_at`, ties broken by `id`). A volunteer has at most one active sign-up per shift. |
+| Capacity | Confirmed sign-ups never exceed a shift's capacity, even under concurrent requests. Signing up for a full shift joins its waiting list. An organizer cannot lower the capacity below the volunteers already confirmed. |
+| No overlap | A volunteer cannot hold two confirmed shifts that overlap in time, across all organizations. A sign-up (or waiting list entry) that overlaps a confirmed shift is refused with the clashing shift named. Shifts that touch (one ends when the next starts) do not overlap. |
+| Waiting list | First come, first served by join time (`signups.created_at`, ties broken by `id`). A volunteer has at most one active sign-up per shift and sees their position. |
+| Shift changes | Shifts must start in the future and end after they start. Their times cannot change once volunteers have signed up, and shifts or activities with sign-ups cannot be deleted. Shifts that have started accept no sign-ups. |
 | Promotion | A cancellation confirms the earliest waitlisted volunteer who has no overlapping confirmed shift. |
-| Authorization | Only the owning organization's organizers can edit shifts or attendance. Enforced on the server with Pundit. |
+| Authorization | Only the owning organization's organizers can edit activities, shifts or attendance, and only members can see or sign up for an organization's shifts. Enforced on the server with Pundit. |
+
+**Concurrency.** `ShiftSignup` ([app/services/shift_signup.rb](app/services/shift_signup.rb)) locks the shift row and then the
+volunteer's row (`SELECT ... FOR UPDATE`) while it checks the rules and inserts the sign-up. Simultaneous
+requests for the same shift, or by the same volunteer, therefore run one at a time. The concurrency tests in
+`spec/services/shift_signup_spec.rb` fail when the locks are removed.
 
 ## Runtime versions
 
@@ -91,8 +99,15 @@ All demo accounts use the password `password123`.
 | volunteer2@example.com | Volunteer in Green Campus Society |
 | volunteer3@example.com | Volunteer in Green Campus Society |
 
-The seeded "Lake Clean-up" (Green Campus Society) and "Weekend Maths Tutoring" (Harbour Tutoring Club)
-shifts overlap on purpose, so the overlap rule can be shown with `volunteer1`.
+Demo walkthrough with the seeded data:
+
+- **Confirmed sign-up:** `volunteer1` is already confirmed for the first "Lake Clean-up" shift (see *My shifts*).
+  Any volunteer can sign up for the second Lake Clean-up shift, which has free places.
+- **Waiting list:** the "Recycling Drive" shift is full (`volunteer2` and `volunteer3`). `volunteer1` pressing
+  *Join waiting list* gets position 1.
+- **Overlap refused:** `volunteer1` signing up for the first "Weekend Maths Tutoring" shift (Harbour Tutoring Club)
+  is refused, because it overlaps their confirmed Lake Clean-up shift.
+- **Access restriction:** `organizer.green` opening a Harbour Tutoring Club shift's edit URL is refused.
 
 ## Tests
 

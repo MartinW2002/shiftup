@@ -8,4 +8,11 @@ class Signup < ApplicationRecord
   scope :active, -> { where.not(status: :cancelled) }
   # Waiting list order: first come, first served by join time (id breaks ties).
   scope :waitlist_order, -> { waitlisted.order(:created_at, :id) }
+
+  # 1 for the first volunteer in line, nil unless waitlisted.
+  def waitlist_position
+    return unless waitlisted?
+
+    shift.signups.waitlisted.where("(signups.created_at, signups.id) < (?, ?)", created_at, id).count + 1
+  end
 end

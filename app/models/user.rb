@@ -8,6 +8,8 @@ class User < ApplicationRecord
   has_many :memberships, dependent: :destroy
   has_many :organizations, through: :memberships
   has_many :signups, dependent: :destroy
+  has_many :confirmed_signups, -> { confirmed }, class_name: "Signup", inverse_of: :user
+  has_many :confirmed_shifts, through: :confirmed_signups, source: :shift
 
   validates :name, presence: true, length: { maximum: 100 }
 

@@ -1,0 +1,6 @@
+<% content_for :title, "Edit #{@activity.title} · ShiftUp" %>
+
+<p class="breadcrumb"><%= link_to @activity.organization.name, @activity.organization %></p>
+<h1>Edit activity</h1>
+
+<%= render "form", activity: @activity %>

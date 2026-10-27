@@ -41,4 +41,28 @@ RSpec.describe Signup, type: :model do
 
     expect(build(:signup, shift: cancelled.shift, user: cancelled.user).save).to be true
   end
+
+  describe "#waitlist_position" do
+    let(:shift) { create(:shift) }
+
+    it "counts the volunteers who joined the waiting list earlier" do
+      first = create(:signup, :waitlisted, shift: shift, created_at: 3.minutes.ago)
+      second = create(:signup, :waitlisted, shift: shift, created_at: 2.minutes.ago)
+      create(:signup, :waitlisted, created_at: 5.minutes.ago) # another shift's waiting list
+
+      expect([ first.waitlist_position, second.waitlist_position ]).to eq([ 1, 2 ])
+    end
+
+    it "breaks a tie in join time by sign-up order" do
+      joined_at = 1.minute.ago
+      first = create(:signup, :waitlisted, shift: shift, created_at: joined_at)
+      second = create(:signup, :waitlisted, shift: shift, created_at: joined_at)
+
+      expect([ first.waitlist_position, second.waitlist_position ]).to eq([ 1, 2 ])
+    end
+
+    it "is nil for a confirmed sign-up" do
+      expect(create(:signup, shift: shift).waitlist_position).to be_nil
+    end
+  end
 end

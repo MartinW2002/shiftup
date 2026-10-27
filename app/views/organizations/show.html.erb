@@ -5,17 +5,27 @@
   <p class="lead"><%= @organization.description %></p>
 <% end %>
 
-<h2>Activities</h2>
+<div class="section-header">
+  <h2>Activities</h2>
+  <% if policy(Activity.new(organization: @organization)).create? %>
+    <%= link_to "New activity", new_organization_activity_path(@organization), class: "button" %>
+  <% end %>
+</div>
+
 <% if @activities.any? %>
   <ul class="card-list">
     <% @activities.each do |activity| %>
-      <li class="card">
-        <strong><%= activity.title %></strong>
-        <% if activity.location.present? %>
-          <span class="muted">· <%= activity.location %></span>
-        <% end %>
-        <% if activity.description.present? %>
-          <p><%= activity.description %></p>
+      <li>
+        <%= link_to activity, class: "card card-link" do %>
+          <strong><%= activity.title %></strong>
+          <% if activity.location.present? %>
+            <span class="muted">· <%= activity.location %></span>
+          <% end %>
+          <% upcoming = activity.shifts.upcoming.count %>
+          <span class="badge"><%= pluralize(upcoming, "upcoming shift") %></span>
+          <% if activity.description.present? %>
+            <p class="muted"><%= activity.description %></p>
+          <% end %>
         <% end %>
       </li>
     <% end %>
