@@ -135,6 +135,9 @@ RSpec examples, the implementation, and the refactoring that followed._
 
 ## Known limitations
 
+- No password reset. The demo deployment does not send email, so Devise's password recovery is turned off.
+- Demo shifts are dated relative to the day the seeds run (the coming Saturday). Each deploy runs the seeds,
+  which add a fresh set of shifts to an activity only once all of its demo shifts are in the past.
 - _TODO_
 
 ## Acknowledgements

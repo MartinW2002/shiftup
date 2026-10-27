@@ -38,7 +38,7 @@ RSpec.describe "Memberships", type: :request do
         post organization_membership_path(organization)
       }.not_to change(Membership, :count)
 
-      expect(flash[:alert]).to eq("You are not authorized to perform this action.")
+      expect(flash[:alert]).to eq("You are already a member of this organization.")
       expect(user.membership_in(organization)).to be_organizer
     end
 

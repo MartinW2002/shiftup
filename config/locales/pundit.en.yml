@@ -1,0 +1,6 @@
+en:
+  pundit:
+    default: "You are not authorized to perform this action."
+    organization_policy:
+      show?: "Only members can see this organization's activities. Join it from the organizations page."
+      join?: "You are already a member of this organization."

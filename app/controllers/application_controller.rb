@@ -28,10 +28,15 @@ class ApplicationController < ActionController::Base
     devise_parameter_sanitizer.permit(:account_update, keys: [ :name ])
   end
 
-  def user_not_authorized
+  # Messages live in config/locales/pundit.en.yml, keyed by policy and rule,
+  # e.g. pundit.organization_policy.join?, with pundit.default as the fallback.
+  def user_not_authorized(exception)
+    policy_name = exception.policy.class.to_s.underscore
+    message = t("#{policy_name}.#{exception.query}", scope: "pundit", default: :default)
+
     respond_to do |format|
       format.html do
-        flash[:alert] = "You are not authorized to perform this action."
+        flash[:alert] = message
         redirect_back_or_to root_path, status: :see_other
       end
       format.any { head :forbidden }

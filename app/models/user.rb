@@ -1,8 +1,9 @@
 class User < ApplicationRecord
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
+  # :recoverable (password reset by email) is left out because the demo deployment sends no email.
   devise :database_authenticatable, :registerable,
-         :recoverable, :rememberable, :validatable
+         :rememberable, :validatable
 
   has_many :memberships, dependent: :destroy
   has_many :organizations, through: :memberships

@@ -6,6 +6,7 @@ Feature: Organization access
   Background:
     Given the organization "Green Campus Society" exists
     And the organization "Harbour Tutoring Club" exists
+    And "Harbour Tutoring Club" has the activity "Weekend Maths Tutoring"
     And I am a volunteer of "Green Campus Society"
     And I am logged in
 
@@ -20,7 +21,8 @@ Feature: Organization access
 
   Scenario: Another organization's page is denied via a direct URL
     When I visit the page for "Harbour Tutoring Club"
-    Then I should see "You are not authorized to perform this action."
+    Then I should see "Only members can see this organization's activities."
+    And I should not see "Weekend Maths Tutoring"
 
   Scenario: Opening my organization from the list
     When I go to the organizations page

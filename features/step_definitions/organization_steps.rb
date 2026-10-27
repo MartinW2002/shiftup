@@ -37,3 +37,7 @@ end
 Then("I should be on the page for {string}") do |name|
   expect(page).to have_current_path(organization_path(Organization.find_by!(name: name)))
 end
+
+Given("{string} has the activity {string}") do |name, title|
+  create(:activity, organization: Organization.find_by!(name: name), title: title)
+end

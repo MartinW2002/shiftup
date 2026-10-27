@@ -1,12 +1,10 @@
 # Demo data for local development and the deployed course demonstration.
 # All organizations, people and events are fictional. Running this file twice is safe.
 
-DEMO_PASSWORD = ENV.fetch("DEMO_PASSWORD", "password123")
-
 def demo_user(email, name)
   User.find_or_create_by!(email: email) do |user|
     user.name = name
-    user.password = DEMO_PASSWORD
+    user.password = ENV.fetch("DEMO_PASSWORD", "password123")
   end
 end
 
@@ -37,10 +35,11 @@ def demo_activity(organization, title, location:, description:, shifts:)
     a.location = location
     a.description = description
   end
-  shifts.each do |starts_at, hours, capacity|
-    activity.shifts.find_or_create_by!(starts_at: starts_at) do |shift|
-      shift.ends_at = starts_at + hours.hours
-      shift.capacity = capacity
+  # Render seeds on every deploy. Shifts are only added when the activity has no upcoming
+  # ones, so redeploying never duplicates them, and stale demo data is refreshed once it is in the past.
+  if activity.shifts.upcoming.none?
+    shifts.each do |starts_at, hours, capacity|
+      activity.shifts.create!(starts_at: starts_at, ends_at: starts_at + hours.hours, capacity: capacity)
     end
   end
   activity
