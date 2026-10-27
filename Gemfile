@@ -59,7 +59,7 @@ group :test do
   gem "cucumber-rails", require: false
   gem "capybara"
   gem "database_cleaner-active_record"
-  gem "shoulda-matchers", "~> 6.0"
+  gem "shoulda-matchers", "~> 8.0"
   gem "pundit-matchers", "~> 4.0"
   # Coverage reporting
   gem "simplecov", require: false
