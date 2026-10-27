@@ -128,8 +128,8 @@ Demo walkthrough with the seeded data:
   Volunteers see the result under *Past shifts* on *My shifts*.
 - **Search:** *Find shifts* searches the upcoming shifts of the user's organizations by text, organization,
   dates and free places.
-- **Access restriction:** `organizer.green` opening a Harbour Tutoring Club shift's edit URL is refused, as is
-  `organizer.harbour` trying to change Tree Planting attendance.
+- **Access restriction:** `organizer.green` opening a Harbour Tutoring Club shift's edit URL is refused, and
+  `organizer.harbour` cannot open the Tree Planting shift (or its attendance) at all.
 
 ## Tests
 
