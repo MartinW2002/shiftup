@@ -50,6 +50,8 @@
                                 aria: { pressed: signup.attendance == value } %>
                 <% end %>
               </span>
+            <% else %>
+              <%= remove_signup_button(signup) %>
             <% end %>
           </li>
         <% end %>
@@ -67,7 +69,11 @@
     <% if @waitlist.any? %>
       <ol class="roster" id="waiting-list">
         <% @waitlist.each_with_index do |signup, index| %>
-          <li><span class="roster-number"><%= index + 1 %></span><span><%= signup.user.name %></span> <span class="muted">joined <%= l(signup.created_at, format: :shift) %></span></li>
+          <li>
+            <span class="roster-number"><%= index + 1 %></span><span><%= signup.user.name %></span>
+            <span class="muted">joined <%= l(signup.created_at, format: :shift) %></span>
+            <%= remove_signup_button(signup) unless @shift.started? %>
+          </li>
         <% end %>
       </ol>
     <% else %>

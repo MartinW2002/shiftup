@@ -37,6 +37,15 @@ RSpec.describe SignupPolicy, type: :policy do
     expect(described_class.new(other_organizer, signup)).to forbid_action(:mark_attendance)
   end
 
+  it "lets only the organization's organizers remove volunteers from a shift" do
+    signup = create(:signup, shift: shift)
+
+    expect(described_class.new(create(:membership, :organizer, organization: organization).user, signup)).to permit_action(:remove)
+    expect(described_class.new(signup.user, signup)).to forbid_action(:remove)
+    expect(described_class.new(create(:membership, organization: organization).user, signup)).to forbid_action(:remove)
+    expect(described_class.new(create(:membership, :organizer).user, signup)).to forbid_action(:remove)
+  end
+
   describe "scope" do
     it "returns only the user's own sign-ups" do
       mine = create(:signup)

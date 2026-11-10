@@ -50,6 +50,24 @@ module ShiftsHelper
     "Delete this shift?"
   end
 
+  # Text of the confirmation dialog for removing a volunteer from a shift or its waiting list.
+  def remove_signup_confirmation(signup)
+    name = signup.user.name
+    if signup.waitlisted?
+      "Remove #{name} from the waiting list? They will be told the next time they open ShiftUp."
+    else
+      text = "Remove #{name} from this shift? They will be told the next time they open ShiftUp."
+      text += " The first eligible person on the waiting list gets the place." if signup.shift.waitlist_count.positive?
+      text
+    end
+  end
+
+  def remove_signup_button(signup)
+    button_to "Remove", signup_removal_path(signup), class: "button-danger button-small",
+              title: "Remove #{signup.user.name}",
+              form: { class: "roster-remove", data: { turbo_confirm: remove_signup_confirmation(signup) } }
+  end
+
   REPEAT_CALENDAR_MONTHS = 6
 
   # First days of the months shown in the "Repeat on more dates" calendar, starting this month.

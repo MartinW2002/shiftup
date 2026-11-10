@@ -31,7 +31,8 @@ volunteers sign up within capacity, and cancellations are refilled from an order
 
 - Create, edit and delete activities and shifts. A shift is a date with a start and end time (it can run
   past midnight), and adding one can repeat it on several dates picked in a calendar
-- See each shift's confirmed volunteers and waiting list in order
+- See each shift's confirmed volunteers and waiting list in order, and remove someone from either before
+  the shift starts (the volunteer is told on their next visit)
 - Record attendance (present / absent) for confirmed volunteers (US3)
 
 **Everyone**
@@ -54,6 +55,7 @@ volunteers sign up within capacity, and cancellations are refilled from an order
 | Shift changes | A shift is entered as a date, a start time and an end time (`ShiftForm`); an end time earlier than the start time means it ends the next day, and equal times are rejected. Adding a shift can repeat it on more dates (days before today cannot be picked), creating all of them or none. Shifts must start in the future. Their times cannot change once volunteers have signed up. Shifts that have started accept no sign-ups. An organizer can delete a shift even when volunteers have signed up: the confirmation dialog first says how many confirmed volunteers and people on the waiting list will lose their place (or, for a past shift, whose attendance records will be deleted). Activities with sign-ups cannot be deleted. |
 | Promotion | When a place opens (a cancellation, or an organizer raising the capacity), the earliest waitlisted volunteer without an overlapping confirmed shift is confirmed. A skipped volunteer keeps their place in line. Places owed to the waiting list are filled before a newcomer's sign-up is handled, so nobody can jump the queue. A promoted volunteer sees a one-time notice on their next page (`signups.promoted_at` / `promotion_notified_at`). |
 | Cancellation | Volunteers cancel only their own sign-ups, and only before the shift starts. The sign-up is kept with status `cancelled` as a record. An account cannot be deleted while it holds upcoming shifts or waiting list places, so those places are passed on first. |
+| Removal | Before a shift starts, its organization's organizers can remove a confirmed volunteer or someone on the waiting list (`ShiftRemoval`). It works like a cancellation, so a freed place goes to the next eligible volunteer. The removed volunteer sees a one-time notice on their next page (`signups.removed_at` / `removal_notified_at`). |
 | Leaving | Volunteers can leave an organization; organizers cannot. Leaving cancels the volunteer's upcoming shifts and waiting list places there (the confirmation dialog lists them first), and each freed place goes to the next eligible volunteer on the waiting list. Past sign-ups and attendance records are kept. |
 | Attendance | Recorded only for confirmed volunteers, only once the shift has started, and only by the organization's organizers. |
 | Authorization | Only the owning organization's organizers can edit activities, shifts or attendance, and only members can see or sign up for an organization's shifts. Enforced on the server with Pundit. |
@@ -155,8 +157,8 @@ bundle exec rspec
 COVERAGE_CHECK=1 bundle exec cucumber   # fails if merged line coverage is below 80%
 ```
 
-Current coverage: **100% of lines (648/648) and 100% of branches (211/211)**, from
-317 RSpec examples and 42 Cucumber scenarios. Each CI run uploads the HTML report as the `coverage` artifact.
+Current coverage: **100% of lines (708/708) and 100% of branches (233/233)**, from
+341 RSpec examples and 46 Cucumber scenarios. Each CI run uploads the HTML report as the `coverage` artifact.
 
 What the suites cover:
 
@@ -225,8 +227,8 @@ requests"), and how **US2** forced a second iteration on it.
 - No password reset. The demo deployment does not send email, so Devise's password recovery is turned off.
 - Demo shifts are dated relative to the day the seeds run (the coming Saturday). Each deploy runs the seeds,
   which add a fresh set of shifts to an activity only once all of its demo shifts are in the past.
-- Promotion notices appear only inside ShiftUp (no email or push notifications).
-- Organizers cannot remove a volunteer from a shift; volunteers cancel their own sign-ups.
+- Promotion and removal notices appear only inside ShiftUp (no email or push notifications).
+- An organizer cannot give a reason when removing someone, and a removed volunteer can sign up again.
 - There is no page for creating organizations or granting the organizer role. Both come from the seeds
   (or the Rails console); new accounts join organizations as volunteers.
 - An organizer who deletes their account can leave an organization without organizers.

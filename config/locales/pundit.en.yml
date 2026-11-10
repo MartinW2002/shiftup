@@ -23,3 +23,4 @@ en:
       create?: "Join this organization before signing up for its shifts."
       destroy?: "You can only cancel your own sign-ups."
       mark_attendance?: "Only this organization's organizers can record attendance."
+      remove?: "Only this organization's organizers can remove volunteers from a shift."

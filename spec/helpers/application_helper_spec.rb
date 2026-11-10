@@ -41,9 +41,11 @@ RSpec.describe ApplicationHelper, type: :helper do
   end
 
   describe "#flash_kind" do
-    it "treats alerts as errors and everything else as confirmations" do
+    it "treats alerts and removal notices as errors, and everything else as confirmations" do
       expect(helper.flash_kind("alert")).to eq(:error)
+      expect(helper.flash_kind(:removal)).to eq(:error)
       expect(helper.flash_kind(:notice)).to eq(:success)
+      expect(helper.flash_kind(:promotion)).to eq(:success)
     end
   end
 end

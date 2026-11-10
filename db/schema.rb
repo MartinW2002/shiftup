@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_10_032644) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_10_045939) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -65,11 +65,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_032644) do
     t.datetime "updated_at", null: false
     t.datetime "promoted_at"
     t.datetime "promotion_notified_at"
+    t.datetime "removed_at"
+    t.datetime "removal_notified_at"
     t.index ["shift_id", "status", "created_at"], name: "index_signups_on_shift_id_and_status_and_created_at"
     t.index ["shift_id", "user_id"], name: "index_signups_on_shift_and_user_active", unique: true, where: "(status <> 2)"
     t.index ["shift_id"], name: "index_signups_on_shift_id"
     t.index ["user_id"], name: "index_signups_on_user_id"
     t.index ["user_id"], name: "index_signups_on_user_id_unnotified_promotions", where: "((promoted_at IS NOT NULL) AND (promotion_notified_at IS NULL))"
+    t.index ["user_id"], name: "index_signups_on_user_id_unnotified_removals", where: "((removed_at IS NOT NULL) AND (removal_notified_at IS NULL))"
   end
 
   create_table "users", force: :cascade do |t|

@@ -16,6 +16,7 @@ Rails.application.routes.draw do
 
   resources :signups, only: [] do
     resource :attendance, only: :update
+    resource :removal, only: :create
   end
 
   # The signed-in volunteer's own schedule.

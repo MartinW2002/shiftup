@@ -222,6 +222,8 @@ main.container { padding-top: 28px; padding-bottom: 56px; }
   line-height: 24px;
 }
 .roster .muted { margin-left: auto; font-size: 0.875rem; }
+.roster li { align-items: center; }
+.roster-remove { margin: 0; }
 
 /* Forms */
 form .field { margin-bottom: 16px; }

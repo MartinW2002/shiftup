@@ -70,4 +70,29 @@ RSpec.describe ShiftsHelper, type: :helper do
       expect(helper.delete_shift_confirmation(create(:shift, :past))).to eq("Delete this shift?")
     end
   end
+
+  describe "#remove_signup_confirmation" do
+    let(:shift) { create(:shift, capacity: 1) }
+    let(:victor) { create(:user, name: "Victor Volunteer") }
+
+    it "warns that the volunteer will be told" do
+      signup = create(:signup, shift: shift, user: victor)
+
+      expect(helper.remove_signup_confirmation(signup)).to eq("Remove Victor Volunteer from this shift? They will be told the next time they open ShiftUp.")
+    end
+
+    it "adds that the place goes to the waiting list when someone is waiting" do
+      signup = create(:signup, shift: shift, user: victor)
+      create(:signup, :waitlisted, shift: shift)
+
+      expect(helper.remove_signup_confirmation(signup)).to end_with("The first eligible person on the waiting list gets the place.")
+    end
+
+    it "speaks of the waiting list for someone who is waiting" do
+      create(:signup, shift: shift)
+      waiting = create(:signup, :waitlisted, shift: shift, user: victor)
+
+      expect(helper.remove_signup_confirmation(waiting)).to eq("Remove Victor Volunteer from the waiting list? They will be told the next time they open ShiftUp.")
+    end
+  end
 end

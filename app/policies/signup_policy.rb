@@ -15,6 +15,11 @@ class SignupPolicy < ApplicationPolicy
     user.present? && user.organizer_of?(organization)
   end
 
+  # Only the organization's own organizers remove volunteers from a shift.
+  def remove?
+    mark_attendance?
+  end
+
   # Volunteers only ever see their own sign-ups.
   class Scope < ApplicationPolicy::Scope
     def resolve

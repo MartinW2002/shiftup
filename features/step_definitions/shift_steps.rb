@@ -175,3 +175,30 @@ end
 Then("{string} should have no shifts") do |title|
   expect(Activity.find_by!(title: title).shifts).to be_empty
 end
+
+def active_signup_of(name, time, title)
+  shift_of(time, title).signups.active.find_by!(user: volunteer_named(name))
+end
+
+Then("the remove confirmation for {string} should say {string}") do |name, text|
+  form = find("form[action='#{signup_removal_path(active_signup_of(name, '09:00', 'Lake Clean-up'))}']")
+  expect(form["data-turbo-confirm"]).to eq(text)
+end
+
+When("I remove {string} from the shift") do |name|
+  within(".roster li", text: volunteer_named(name).name) { click_button "Remove" }
+end
+
+When("I try to remove {string} from the {string} shift of {string} directly") do |name, time, title|
+  page.driver.submit :post, signup_removal_path(active_signup_of(name, time, title)), {}
+end
+
+Given("an organizer of {string} removed {string} from the {string} shift of {string}") do |organization, name, time, title|
+  signup = active_signup_of(name, time, title)
+  expect(signup.shift.activity.organization.name).to eq(organization)
+  expect(ShiftRemoval.new(signup).call).to be_success
+end
+
+Then("{string} should no longer be signed up for the {string} shift of {string}") do |name, time, title|
+  expect(shift_of(time, title).signups.active.where(user: volunteer_named(name))).to be_empty
+end

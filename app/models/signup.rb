@@ -16,6 +16,8 @@ class Signup < ApplicationRecord
     confirmed.where.not(promoted_at: nil).where(promotion_notified_at: nil)
              .joins(:shift).merge(Shift.upcoming)
   }
+  # Removals by an organizer the volunteer has not been told about yet.
+  scope :unnotified_removals, -> { where.not(removed_at: nil).where(removal_notified_at: nil) }
 
   # 1 for the first volunteer in line, nil unless waitlisted.
   def waitlist_position

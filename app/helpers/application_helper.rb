@@ -18,8 +18,9 @@ module ApplicationHelper
     end
   end
 
-  # Devise and the controllers use :alert for problems and :notice for confirmations.
+  # Devise and the controllers use :alert for problems and :notice for confirmations; :removal is
+  # the notice that an organizer removed the user from a shift (SignupNotices).
   def flash_kind(type)
-    type.to_s == "alert" ? :error : :success
+    %w[alert removal].include?(type.to_s) ? :error : :success
   end
 end

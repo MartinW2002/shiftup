@@ -110,4 +110,14 @@ RSpec.describe Signup, type: :model do
       expect(described_class.unnotified_promotions).to contain_exactly(unnotified)
     end
   end
+
+  describe ".unnotified_removals" do
+    it "returns removals the volunteer has not been told about yet" do
+      unnotified = create(:signup, :cancelled, removed_at: 1.hour.ago)
+      create(:signup, :cancelled, removed_at: 1.hour.ago, removal_notified_at: 30.minutes.ago)
+      create(:signup, :cancelled)
+
+      expect(described_class.unnotified_removals).to contain_exactly(unnotified)
+    end
+  end
 end

@@ -24,7 +24,7 @@ class ShiftPromotion
       break if shift.full?
       next if overlaps_confirmed_shift?(signup.user)
 
-      # promoted_at lets the volunteer be told on their next visit (PromotionNotices).
+      # promoted_at lets the volunteer be told on their next visit (SignupNotices).
       signup.update!(status: :confirmed, promoted_at: Time.current)
       promoted << signup
     end

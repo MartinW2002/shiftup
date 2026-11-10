@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-RSpec.describe "Promotion notices", type: :request do
+RSpec.describe "Signup notices", type: :request do
   let(:user) { create(:user) }
   let(:lake) { create(:activity, title: "Lake Clean-up") }
   let(:shift) { create(:shift, activity: lake, starts_at: 2.days.from_now.change(hour: 9), ends_at: 2.days.from_now.change(hour: 11)) }
@@ -105,5 +105,73 @@ RSpec.describe "Promotion notices", type: :request do
     get root_path
 
     expect(notice).to start_with("Good news! A place opened up, so you are now confirmed for Lake Clean-up")
+  end
+
+  describe "removal notices" do
+    let(:organization) { create(:organization, name: "Green Campus Society") }
+    let(:lake) { create(:activity, title: "Lake Clean-up", organization: organization) }
+
+    def removal_notice
+      Nokogiri::HTML(response.body).css(".message-error .message-body").map(&:text).find { |text| text.include?("removed you from") }
+    end
+
+    def removed(from: shift)
+      create(:signup, :cancelled, user: user, shift: from, removed_at: 1.minute.ago)
+    end
+
+    it "tells the volunteer once, in red, after logging in" do
+      removed
+
+      post user_session_path, params: { user: { email: user.email, password: "password123" } }
+      follow_redirect!
+      expect(removal_notice).to eq("An organizer of Green Campus Society removed you from Lake Clean-up on #{shift.time_range_text}.")
+
+      get root_path
+      expect(removal_notice).to be_nil
+    end
+
+    it "combines removals by the same organization in one sentence" do
+      later = create(:shift, activity: create(:activity, title: "Recycling Drive", organization: organization),
+                             starts_at: 5.days.from_now, ends_at: 5.days.from_now + 2.hours)
+      removed(from: later)
+      removed
+      sign_in user
+
+      get root_path
+
+      expect(removal_notice).to eq("An organizer of Green Campus Society removed you from " \
+                                   "Lake Clean-up on #{shift.time_range_text} and Recycling Drive on #{later.time_range_text}.")
+    end
+
+    it "is not used up by a Turbo link prefetch" do
+      removed
+      sign_in user
+
+      get signups_path, headers: { "X-Sec-Purpose" => "prefetch" }
+      get signups_path
+
+      expect(removal_notice).to be_present
+    end
+
+    it "shows a promotion and a removal side by side" do
+      removed
+      create(:signup, user: user, promoted_at: 1.minute.ago)
+      sign_in user
+
+      get root_path
+
+      expect(removal_notice).to be_present
+      expect(notice).to start_with("Good news!")
+    end
+
+    it "comes from a real removal end to end" do
+      signup = create(:signup, user: user, shift: shift)
+      ShiftRemoval.new(signup).call
+      sign_in user
+
+      get root_path
+
+      expect(removal_notice).to start_with("An organizer of")
+    end
   end
 end
