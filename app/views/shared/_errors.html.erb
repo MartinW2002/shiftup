@@ -1,10 +1,16 @@
+<%# Form errors: one problem as a sentence, several as a short list. The fields themselves
+    are outlined in red through Rails' .field_with_errors wrapper (see application.css). %>
 <% if record.errors.any? %>
-  <div class="flash flash-alert" role="alert">
-    <p><strong><%= pluralize(record.errors.count, "error") %> prevented this <%= record.model_name.human.downcase %> from being saved:</strong></p>
-    <ul>
-      <% record.errors.full_messages.each do |message| %>
-        <li><%= message %></li>
-      <% end %>
-    </ul>
-  </div>
+  <% messages = record.errors.full_messages %>
+  <%= message_box :error, extra_class: "form-errors" do %>
+    <% if messages.one? %>
+      <p><%= messages.first %></p>
+    <% else %>
+      <ul>
+        <% messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    <% end %>
+  <% end %>
 <% end %>

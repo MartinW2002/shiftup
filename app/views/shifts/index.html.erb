@@ -5,7 +5,7 @@
 
 <%= form_with model: @search, scope: :search, url: shifts_path, method: :get, class: "card filters", data: { turbo_action: "advance" } do |f| %>
   <% if @search.errors.any? %>
-    <div class="flash flash-alert" role="alert"><%= @search.errors.full_messages.to_sentence %></div>
+    <%= message_box :error, @search.errors.full_messages.to_sentence %>
   <% end %>
 
   <div class="filters-grid">

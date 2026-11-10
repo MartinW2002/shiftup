@@ -20,6 +20,39 @@ RSpec.describe "Registrations", type: :request do
     expect(response.body).to include("Name can&#39;t be blank")
   end
 
+  describe "showing form errors" do
+    def errors_box
+      Nokogiri::HTML(response.body).at_css(".form-errors")
+    end
+
+    it "shows a single problem as one sentence, without a count heading" do
+      valid_params[:user].merge!(password: "short", password_confirmation: "short")
+
+      post user_registration_path, params: valid_params
+
+      expect(errors_box.at_css("p").text).to eq("Password is too short (minimum is 6 characters)")
+      expect(errors_box.css("li")).to be_empty
+      expect(response.body).not_to include("prevented this")
+    end
+
+    it "lists several problems" do
+      post user_registration_path, params: { user: { name: "", email: "", password: "short", password_confirmation: "short" } }
+
+      expect(errors_box.css("li").map(&:text)).to include("Name can't be blank", "Email can't be blank",
+                                                          "Password is too short (minimum is 6 characters)")
+    end
+
+    it "marks the invalid fields" do
+      valid_params[:user].merge!(password: "short", password_confirmation: "short")
+
+      post user_registration_path, params: valid_params
+
+      page = Nokogiri::HTML(response.body)
+      expect(page.at_css(".field_with_errors #user_password")).to be_present
+      expect(page.at_css(".field_with_errors #user_name")).to be_nil
+    end
+  end
+
   it "never lets a user grant themselves a membership while signing up" do
     organization = create(:organization)
     valid_params[:user][:memberships_attributes] = [ { organization_id: organization.id, role: "organizer" } ]

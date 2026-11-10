@@ -52,7 +52,7 @@
 
     <main class="container">
       <% flash.each do |type, message| %>
-        <div class="flash flash-<%= type %>" role="<%= type.to_s == "alert" ? "alert" : "status" %>"><%= message %></div>
+        <%= message_box flash_kind(type), message %>
       <% end %>
 
       <%= yield %>

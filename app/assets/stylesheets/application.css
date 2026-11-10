@@ -160,12 +160,6 @@ main.container { padding-top: 28px; padding-bottom: 56px; }
 .hero h1 { font-size: 2.4rem; margin-bottom: 0.3em; }
 .hero .lead { max-width: 620px; }
 
-/* Flash messages */
-.flash { padding: 12px 16px; border-radius: var(--radius); margin-bottom: 20px; border-left: 4px solid currentColor; }
-.flash-notice { background: var(--notice-bg); color: var(--notice-text); }
-.flash-alert { background: var(--alert-bg); color: var(--alert-text); }
-.flash ul { margin: 6px 0 0; padding-left: 20px; }
-.flash p { margin: 0; }
 
 /* Cards */
 .card-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
@@ -244,6 +238,46 @@ input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--accent);
 .form-card { max-width: 520px; }
 .form-card input, .form-card textarea { max-width: none; }
 .card > .actions:last-child, .form-card > .actions:last-child { margin-bottom: 0; }
+
+/* Messages: flash messages, form errors and search errors (ApplicationHelper#message_box) */
+.message {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding: 12px 14px;
+  border: 1px solid;
+  border-radius: var(--radius);
+  font-size: 0.92rem;
+}
+.message-error { background: var(--alert-bg); border-color: #f1caca; color: var(--alert-text); }
+.message-success { background: var(--notice-bg); border-color: #bfe3cc; color: var(--notice-text); }
+.message-body { min-width: 0; }
+.message-body p, .message-body ul { margin: 0; }
+.message-body ul { padding-left: 18px; }
+.message-body li + li { margin-top: 2px; }
+.message-icon {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 20px;
+  text-align: center;
+}
+.message-error .message-icon { background: var(--danger); }
+.message-success .message-icon { background: var(--notice-text); }
+
+/* Rails wraps invalid fields and their labels in .field_with_errors. */
+.field_with_errors { display: contents; }
+.field_with_errors label { color: var(--danger); }
+.field_with_errors input, .field_with_errors textarea, .field_with_errors select { border-color: var(--danger); }
+.field_with_errors input:focus, .field_with_errors textarea:focus, .field_with_errors select:focus {
+  box-shadow: 0 0 0 3px rgba(196, 43, 43, 0.2);
+}
 
 /* Log in, sign up and account pages */
 .auth-card { max-width: 420px; margin: 24px auto; padding: 28px; }
