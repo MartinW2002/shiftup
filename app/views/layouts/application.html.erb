@@ -52,7 +52,7 @@
 
     <main class="container">
       <% flash.each do |type, message| %>
-        <%= message_box flash_kind(type), message %>
+        <%= message_box flash_kind(type), message, temporary: true %>
       <% end %>
 
       <%= yield %>

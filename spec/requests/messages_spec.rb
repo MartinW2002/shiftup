@@ -25,6 +25,14 @@ RSpec.describe "Messages", type: :request do
     expect(message(:success)).to eq("You joined Green Campus Society as a volunteer.")
   end
 
+  it "keeps flash messages out of Turbo's page cache, so they do not reappear on revisits" do
+    sign_in user
+    post organization_membership_path(organization)
+    follow_redirect!
+
+    expect(Nokogiri::HTML(response.body).at_css(".message-success")["data-turbo-temporary"]).to eq("true")
+  end
+
   it "shows a failed login as an error message" do
     create(:user, email: "vera@example.com")
 

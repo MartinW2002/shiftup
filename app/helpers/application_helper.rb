@@ -7,10 +7,12 @@ module ApplicationHelper
 
   # The one message style used across the app: flash messages, form errors and search errors.
   # +kind+ is :error (red, "!") or :success (green, "✓"). Pass the text, or a block for richer content.
-  def message_box(kind, text = nil, extra_class: nil, &block)
+  # +temporary+ keeps the message out of Turbo's page snapshots, so a one-time message such as a
+  # flash does not reappear when the page is shown again from Turbo's cache.
+  def message_box(kind, text = nil, extra_class: nil, temporary: false, &block)
     error = kind.to_sym == :error
     tag.div(class: [ "message", "message-#{error ? 'error' : 'success'}", extra_class ],
-            role: error ? "alert" : "status") do
+            role: error ? "alert" : "status", data: { turbo_temporary: (true if temporary) }) do
       tag.span(error ? "!" : "✓", class: "message-icon", aria: { hidden: true }) +
         tag.div(block ? capture(&block) : text, class: "message-body")
     end

@@ -10,6 +10,12 @@ class Signup < ApplicationRecord
   scope :active, -> { where.not(status: :cancelled) }
   # Waiting list order: first come, first served by join time (id breaks ties).
   scope :waitlist_order, -> { waitlisted.order(:created_at, :id) }
+  # Promotions from the waiting list the volunteer has not been told about yet, for shifts
+  # they still hold and that have not started.
+  scope :unnotified_promotions, lambda {
+    confirmed.where.not(promoted_at: nil).where(promotion_notified_at: nil)
+             .joins(:shift).merge(Shift.upcoming)
+  }
 
   # 1 for the first volunteer in line, nil unless waitlisted.
   def waitlist_position

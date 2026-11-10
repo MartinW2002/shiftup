@@ -32,6 +32,16 @@ RSpec.describe ShiftPromotion do
     expect(later.reload).to be_waitlisted
   end
 
+  it "records when the volunteer was promoted, so they can be told on their next visit" do
+    waiter = waiting(created_at: 1.minute.ago)
+
+    freeze_time do
+      promote
+
+      expect(waiter.reload).to have_attributes(promoted_at: Time.current, promotion_notified_at: nil)
+    end
+  end
+
   it "fills every free place, in waiting list order" do
     shift.update!(capacity: 3)
     first = waiting(created_at: 3.minutes.ago)

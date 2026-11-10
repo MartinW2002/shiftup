@@ -30,6 +30,11 @@ RSpec.describe ApplicationHelper, type: :helper do
       expect(message.at_css(".message-body li").text).to eq("One")
     end
 
+    it "can be kept out of Turbo's page snapshots, so a one-time message is not shown again" do
+      expect(box(helper.message_box(:success, "Saved", temporary: true))["data-turbo-temporary"]).to eq("true")
+      expect(box(helper.message_box(:success, "Saved"))["data-turbo-temporary"]).to be_nil
+    end
+
     it "escapes the text" do
       expect(helper.message_box(:error, "<b>bold</b>")).to include("&lt;b&gt;bold&lt;/b&gt;")
     end

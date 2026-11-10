@@ -21,7 +21,8 @@ volunteers sign up within capacity, and cancellations are refilled from an order
 - Join any organization as a volunteer (organizer roles are never self-assigned), and leave it again,
   which cancels your upcoming shifts and waiting list places there
 - Sign up for a shift within capacity, or join its waiting list and see your position; overlapping shifts are refused (US1)
-- Cancel a sign-up or leave a waiting list; the next eligible volunteer is promoted (US2)
+- Cancel a sign-up or leave a waiting list; the next eligible volunteer is promoted (US2) and is told
+  on the next page they open (right after logging in, if they were logged out)
 - Find shifts by text, organization, date range and free places
 - *My shifts*: upcoming shifts with waiting list positions, and past shifts with attendance
 
@@ -49,7 +50,7 @@ volunteers sign up within capacity, and cancellations are refilled from an order
 | No overlap | A volunteer cannot hold two confirmed shifts that overlap in time, across all organizations. A sign-up (or waiting list entry) that overlaps a confirmed shift is refused with the clashing shift named. Shifts that touch (one ends when the next starts) do not overlap. |
 | Waiting list | First come, first served by join time (`signups.created_at`, ties broken by `id`). A volunteer has at most one active sign-up per shift and sees their position. |
 | Shift changes | Shifts must start in the future and end after they start. Their times cannot change once volunteers have signed up, and shifts or activities with sign-ups cannot be deleted. Shifts that have started accept no sign-ups. |
-| Promotion | When a place opens (a cancellation, or an organizer raising the capacity), the earliest waitlisted volunteer without an overlapping confirmed shift is confirmed. A skipped volunteer keeps their place in line. Places owed to the waiting list are filled before a newcomer's sign-up is handled, so nobody can jump the queue. |
+| Promotion | When a place opens (a cancellation, or an organizer raising the capacity), the earliest waitlisted volunteer without an overlapping confirmed shift is confirmed. A skipped volunteer keeps their place in line. Places owed to the waiting list are filled before a newcomer's sign-up is handled, so nobody can jump the queue. A promoted volunteer sees a one-time notice on their next page (`signups.promoted_at` / `promotion_notified_at`). |
 | Cancellation | Volunteers cancel only their own sign-ups, and only before the shift starts. The sign-up is kept with status `cancelled` as a record. An account cannot be deleted while it holds upcoming shifts or waiting list places, so those places are passed on first. |
 | Leaving | Volunteers can leave an organization; organizers cannot. Leaving cancels the volunteer's upcoming shifts and waiting list places there (the confirmation dialog lists them first), and each freed place goes to the next eligible volunteer on the waiting list. Past sign-ups and attendance records are kept. |
 | Attendance | Recorded only for confirmed volunteers, only once the shift has started, and only by the organization's organizers. |
@@ -152,8 +153,8 @@ bundle exec rspec
 COVERAGE_CHECK=1 bundle exec cucumber   # fails if merged line coverage is below 80%
 ```
 
-Current coverage: **100% of lines (517/517) and 100% of branches (149/149)**, from
-250 RSpec examples and 36 Cucumber scenarios. Each CI run uploads the HTML report as the `coverage` artifact.
+Current coverage: **100% of lines (545/545) and 100% of branches (165/165)**, from
+284 RSpec examples and 39 Cucumber scenarios. Each CI run uploads the HTML report as the `coverage` artifact.
 
 What the suites cover:
 
@@ -209,7 +210,7 @@ requests"), and how **US2** forced a second iteration on it.
 - No password reset. The demo deployment does not send email, so Devise's password recovery is turned off.
 - Demo shifts are dated relative to the day the seeds run (the coming Saturday). Each deploy runs the seeds,
   which add a fresh set of shifts to an activity only once all of its demo shifts are in the past.
-- Volunteers are not notified when they are promoted from a waiting list; they see it on *My shifts*.
+- Promotion notices appear only inside ShiftUp (no email or push notifications).
 - Organizers cannot remove a volunteer from a shift; volunteers cancel their own sign-ups.
 - There is no page for creating organizations or granting the organizer role. Both come from the seeds
   (or the Rails console); new accounts join organizations as volunteers.

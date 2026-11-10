@@ -98,4 +98,16 @@ RSpec.describe Signup, type: :model do
       expect(signup.errors[:attendance]).to include("is not included in the list")
     end
   end
+
+  describe ".unnotified_promotions" do
+    it "returns promotions for upcoming shifts the volunteer still holds and has not been told about" do
+      unnotified = create(:signup, promoted_at: 1.hour.ago)
+      create(:signup, promoted_at: 1.hour.ago, promotion_notified_at: 30.minutes.ago)
+      create(:signup)
+      create(:signup, :cancelled, promoted_at: 1.hour.ago)
+      create(:signup, shift: create(:shift, :past), promoted_at: 1.hour.ago)
+
+      expect(described_class.unnotified_promotions).to contain_exactly(unnotified)
+    end
+  end
 end

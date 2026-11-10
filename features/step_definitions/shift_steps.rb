@@ -142,3 +142,8 @@ end
 Given("I was confirmed and present for the {string} shift of {string}") do |time, title|
   create(:signup, shift: shift_of(time, title), user: @current_user).update!(attendance: :present)
 end
+
+Given("{string} cancels the {string} shift of {string}") do |name, time, title|
+  result = ShiftCancellation.new(shift: shift_of(time, title), user: volunteer_named(name)).call
+  expect(result).to be_success
+end
