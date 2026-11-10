@@ -292,7 +292,6 @@ input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--accent);
 .calendar-day input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: pointer; }
 .calendar-day:hover { border-color: var(--accent); }
 .calendar-day:has(input:focus-visible) { box-shadow: var(--focus-ring); }
-.calendar-day.is-today { font-weight: 700; border-color: var(--accent); }
 .calendar-day:has(input:checked) { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 600; }
 /* :has(input) matches the specificity of the "picked" rule above, so the main date stays solid. */
 .calendar-day.is-main:has(input) { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 700; cursor: default; }

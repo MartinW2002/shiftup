@@ -24,7 +24,7 @@
         <% end %>
         <% (month..month.end_of_month).each do |day| %>
           <% past = day < Date.current %>
-          <label class="<%= class_names("calendar-day", "is-past" => past, "is-today" => day == Date.current) %>">
+          <label class="<%= class_names("calendar-day", "is-past" => past) %>">
             <input type="checkbox" name="shift[repeat_dates][]" value="<%= day.iso8601 %>"
                    <%= "checked" if picked.include?(day.iso8601) %> <%= "disabled" if past %>
                    data-shift-form-target="day" data-action="shift-form#updateSummary">
