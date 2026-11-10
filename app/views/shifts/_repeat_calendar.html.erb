@@ -1,0 +1,43 @@
+<%# One checkbox per day. Days before today are disabled (greyed out). %>
+<% picked = Array(form.repeat_dates).map(&:to_s) %>
+<div class="repeat-calendar" data-shift-form-target="calendar">
+  <p class="field-hint">Pick the other dates this shift also takes place on, with the same times and capacity.</p>
+
+  <div class="calendar-nav" data-shift-form-target="nav" hidden>
+    <button type="button" class="button-ghost button-small" data-shift-form-target="previous"
+            data-action="shift-form#previousMonth" aria-label="Previous month">‹</button>
+    <span class="calendar-title" data-shift-form-target="title" aria-live="polite"></span>
+    <button type="button" class="button-ghost button-small" data-shift-form-target="next"
+            data-action="shift-form#nextMonth" aria-label="Next month">›</button>
+  </div>
+
+  <% repeat_calendar_months.each do |month| %>
+    <section class="calendar-month" data-shift-form-target="month" data-month="<%= month.strftime("%Y-%m") %>"
+             aria-label="<%= month.strftime("%B %Y") %>">
+      <h3 class="calendar-month-name"><%= month.strftime("%B %Y") %></h3>
+      <div class="calendar-grid">
+        <% %w[Mon Tue Wed Thu Fri Sat Sun].each do |weekday| %>
+          <span class="calendar-weekday" aria-hidden="true"><%= weekday %></span>
+        <% end %>
+        <% (month.cwday - 1).times do %>
+          <span aria-hidden="true"></span>
+        <% end %>
+        <% (month..month.end_of_month).each do |day| %>
+          <% past = day < Date.current %>
+          <label class="<%= class_names("calendar-day", "is-past" => past, "is-today" => day == Date.current) %>">
+            <input type="checkbox" name="shift[repeat_dates][]" value="<%= day.iso8601 %>"
+                   <%= "checked" if picked.include?(day.iso8601) %> <%= "disabled" if past %>
+                   data-shift-form-target="day" data-action="shift-form#updateSummary">
+            <span aria-hidden="true"><%= day.day %></span>
+            <span class="visually-hidden"><%= day.strftime("%A %-d %B %Y") %></span>
+          </label>
+        <% end %>
+      </div>
+    </section>
+  <% end %>
+
+  <p class="calendar-legend" data-shift-form-target="legend" aria-hidden="true" hidden>
+    <span class="legend-main">Date above</span><span class="legend-extra">Also on</span>
+  </p>
+  <p class="calendar-summary" data-shift-form-target="summary" aria-live="polite" hidden></p>
+</div>

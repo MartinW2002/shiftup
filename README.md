@@ -29,7 +29,8 @@ volunteers sign up within capacity, and cancellations are refilled from an order
 
 **Organizers** (for their own organization only)
 
-- Create, edit and delete activities and shifts
+- Create, edit and delete activities and shifts. A shift is a date with a start and end time (it can run
+  past midnight), and adding one can repeat it on several dates picked in a calendar
 - See each shift's confirmed volunteers and waiting list in order
 - Record attendance (present / absent) for confirmed volunteers (US3)
 
@@ -50,7 +51,7 @@ volunteers sign up within capacity, and cancellations are refilled from an order
 | Capacity | Confirmed sign-ups never exceed a shift's capacity, even under concurrent requests. Signing up for a full shift joins its waiting list. An organizer cannot lower the capacity below the volunteers already confirmed. |
 | No overlap | A volunteer cannot hold two confirmed shifts that overlap in time, across all organizations. A sign-up (or waiting list entry) that overlaps a confirmed shift is refused with the clashing shift named. Shifts that touch (one ends when the next starts) do not overlap. |
 | Waiting list | First come, first served by join time (`signups.created_at`, ties broken by `id`). A volunteer has at most one active sign-up per shift and sees their position. |
-| Shift changes | Shifts must start in the future and end after they start. Their times cannot change once volunteers have signed up. Shifts that have started accept no sign-ups. An organizer can delete a shift even when volunteers have signed up: the confirmation dialog first says how many confirmed volunteers and people on the waiting list will lose their place (or, for a past shift, whose attendance records will be deleted). Activities with sign-ups cannot be deleted. |
+| Shift changes | A shift is entered as a date, a start time and an end time (`ShiftForm`); an end time earlier than the start time means it ends the next day, and equal times are rejected. Adding a shift can repeat it on more dates (days before today cannot be picked), creating all of them or none. Shifts must start in the future. Their times cannot change once volunteers have signed up. Shifts that have started accept no sign-ups. An organizer can delete a shift even when volunteers have signed up: the confirmation dialog first says how many confirmed volunteers and people on the waiting list will lose their place (or, for a past shift, whose attendance records will be deleted). Activities with sign-ups cannot be deleted. |
 | Promotion | When a place opens (a cancellation, or an organizer raising the capacity), the earliest waitlisted volunteer without an overlapping confirmed shift is confirmed. A skipped volunteer keeps their place in line. Places owed to the waiting list are filled before a newcomer's sign-up is handled, so nobody can jump the queue. A promoted volunteer sees a one-time notice on their next page (`signups.promoted_at` / `promotion_notified_at`). |
 | Cancellation | Volunteers cancel only their own sign-ups, and only before the shift starts. The sign-up is kept with status `cancelled` as a record. An account cannot be deleted while it holds upcoming shifts or waiting list places, so those places are passed on first. |
 | Leaving | Volunteers can leave an organization; organizers cannot. Leaving cancels the volunteer's upcoming shifts and waiting list places there (the confirmation dialog lists them first), and each freed place goes to the next eligible volunteer on the waiting list. Past sign-ups and attendance records are kept. |
@@ -154,8 +155,8 @@ bundle exec rspec
 COVERAGE_CHECK=1 bundle exec cucumber   # fails if merged line coverage is below 80%
 ```
 
-Current coverage: **100% of lines (560/560) and 100% of branches (175/175)**, from
-291 RSpec examples and 40 Cucumber scenarios. Each CI run uploads the HTML report as the `coverage` artifact.
+Current coverage: **100% of lines (648/648) and 100% of branches (211/211)**, from
+317 RSpec examples and 42 Cucumber scenarios. Each CI run uploads the HTML report as the `coverage` artifact.
 
 What the suites cover:
 

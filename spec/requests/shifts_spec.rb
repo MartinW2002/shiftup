@@ -8,7 +8,7 @@ RSpec.describe "Shifts", type: :request do
   let(:volunteer) { create(:membership, organization: organization, user: create(:user, name: "Vera Volunteer")).user }
   let(:other_organizer) { create(:membership, :organizer).user }
   let(:starts_at) { 3.days.from_now.change(hour: 9) }
-  let(:valid_params) { { shift: { starts_at: starts_at.strftime("%Y-%m-%dT%H:%M"), ends_at: (starts_at + 2.hours).strftime("%Y-%m-%dT%H:%M"), capacity: 4 } } }
+  let(:valid_params) { { shift: { date: starts_at.to_date.iso8601, start_time: "09:00", end_time: "11:00", capacity: 4 } } }
 
   describe "as an organizer of the organization" do
     before { sign_in organizer }
@@ -21,11 +21,48 @@ RSpec.describe "Shifts", type: :request do
       expect(Shift.last.starts_at.time_zone.name).to eq("Hong Kong")
     end
 
-    it "rejects a shift in the past" do
-      post activity_shifts_path(activity), params: { shift: valid_params[:shift].merge(starts_at: 1.day.ago.strftime("%Y-%m-%dT%H:%M")) }
+    it "rejects a date in the past" do
+      post activity_shifts_path(activity), params: { shift: valid_params[:shift].merge(date: Date.yesterday.iso8601) }
 
       expect(response).to have_http_status(:unprocessable_content)
-      expect(response.body).to include("Starts at must be in the future")
+      expect(response.body).to include("Date must be today or later")
+    end
+
+    it "adds a shift that runs past midnight, ending the next day" do
+      post activity_shifts_path(activity), params: { shift: valid_params[:shift].merge(start_time: "22:00", end_time: "02:00") }
+
+      expect(Shift.last.starts_at).to eq(starts_at.change(hour: 22))
+      expect(Shift.last.ends_at).to eq(starts_at.change(hour: 2) + 1.day)
+    end
+
+    it "adds the same shift on every picked date, and says how many" do
+      repeat = [ starts_at.to_date + 7, starts_at.to_date + 14 ].map(&:iso8601)
+
+      expect {
+        post activity_shifts_path(activity), params: { shift: valid_params[:shift].merge(recurring: "1", repeat_dates: repeat) }
+      }.to change(activity.shifts, :count).by(3)
+
+      expect(flash[:notice]).to eq("3 shifts added.")
+      expect(activity.shifts.order(:starts_at).map { |s| s.starts_at.to_date.iso8601 }).to eq([ starts_at.to_date.iso8601, *repeat ])
+    end
+
+    it "ignores picked dates when repeating is not ticked" do
+      post activity_shifts_path(activity), params: { shift: valid_params[:shift].merge(recurring: "0", repeat_dates: [ (starts_at.to_date + 7).iso8601 ]) }
+
+      expect(flash[:notice]).to eq("Shift added.")
+      expect(activity.shifts.count).to eq(1)
+    end
+
+    it "shows the repeat calendar with days before today disabled" do
+      get new_activity_shift_path(activity)
+
+      page = Nokogiri::HTML(response.body)
+      days = page.css("input[name='shift[repeat_dates][]']")
+      disabled = days.select { |day| day["disabled"] }.map { |day| day["value"] }
+      expect(days.first["value"]).to eq(Date.current.beginning_of_month.iso8601)
+      expect(disabled).to eq((Date.current.beginning_of_month...Date.current).map(&:iso8601))
+      expect(page.at_css("#shift_date")["value"]).to eq(Date.tomorrow.iso8601)
+      expect(page.at_css("#shift_date")["min"]).to eq(Date.current.iso8601)
     end
 
     it "rejects a capacity of zero" do

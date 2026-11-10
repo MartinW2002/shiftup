@@ -36,6 +36,16 @@
 }
 
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
 
 body {
   margin: 0;
@@ -221,7 +231,7 @@ form .field { margin-bottom: 16px; }
 .field-check label { display: inline; margin: 0; font-weight: 400; }
 
 input[type="email"], input[type="password"], input[type="text"], input[type="number"],
-input[type="datetime-local"], textarea, select {
+input[type="datetime-local"], input[type="date"], input[type="time"], textarea, select {
   width: 100%;
   max-width: 420px;
   padding: 10px 12px;
@@ -238,6 +248,69 @@ input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--accent);
 .form-card { max-width: 520px; }
 .form-card input, .form-card textarea { max-width: none; }
 .card > .actions:last-child, .form-card > .actions:last-child { margin-bottom: 0; }
+
+/* Shift form: times side by side, and the repeat calendar */
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
+.field-row .field { margin-bottom: 4px; }
+.form-card p.field-hint { margin: 4px 0 16px; }
+.overnight-hint { color: var(--accent); font-weight: 600; margin-bottom: 4px !important; }
+
+.repeat-calendar {
+  margin: -4px 0 16px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+}
+.repeat-calendar > .field-hint { margin-top: 0; }
+.calendar-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.calendar-nav button { font-size: 1.2rem; padding: 2px 12px; }
+.calendar-nav button:disabled { opacity: 0.3; cursor: default; }
+.calendar-title { font-weight: 700; }
+.calendar-month + .calendar-month { margin-top: 16px; }
+.calendar-month-name { margin: 0 0 8px; font-size: 1rem; }
+.repeat-calendar.is-enhanced .calendar-month-name { display: none; }
+.repeat-calendar.is-enhanced .calendar-month + .calendar-month { margin-top: 0; }
+.calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; }
+.calendar-weekday { font-size: 0.75rem; font-weight: 600; color: var(--muted); padding-bottom: 2px; }
+.calendar-day {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  max-height: 44px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  font-size: 0.9rem;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.1s, border-color 0.1s;
+}
+.calendar-day input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: pointer; }
+.calendar-day:hover { border-color: var(--accent); }
+.calendar-day:has(input:focus-visible) { box-shadow: var(--focus-ring); }
+.calendar-day.is-today { font-weight: 700; border-color: var(--accent); }
+.calendar-day:has(input:checked) { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 600; }
+/* :has(input) matches the specificity of the "picked" rule above, so the main date stays solid. */
+.calendar-day.is-main:has(input) { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 700; cursor: default; }
+.calendar-day.is-main input { cursor: default; }
+.calendar-day.is-past { background: transparent; border-color: transparent; color: var(--border-strong); cursor: not-allowed; }
+.calendar-day.is-past input { cursor: not-allowed; }
+.calendar-summary { margin: 12px 0 0; font-size: 0.9rem; color: var(--text); font-weight: 500; }
+.calendar-legend { display: flex; gap: 16px; margin: 10px 0 0; font-size: 0.8rem; color: var(--muted); }
+.calendar-legend span::before {
+  content: "";
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: 6px;
+  vertical-align: -1px;
+  border-radius: 3px;
+  border: 1px solid var(--accent);
+}
+.calendar-legend .legend-main::before { background: var(--accent); }
+.calendar-legend .legend-extra::before { background: var(--accent-soft); }
 
 /* Messages: flash messages, form errors and search errors (ApplicationHelper#message_box) */
 .message {

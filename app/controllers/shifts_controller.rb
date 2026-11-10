@@ -18,20 +18,22 @@ class ShiftsController < ApplicationController
   end
 
   def new
-    @shift = authorize @activity.shifts.build
+    @form = ShiftForm.new(shift: authorize(@activity.shifts.build), date: Date.tomorrow)
   end
 
   def create
-    @shift = authorize @activity.shifts.build(shift_params)
+    @form = ShiftForm.new(shift: authorize(@activity.shifts.build), **shift_params)
 
-    if @shift.save
-      redirect_to @activity, notice: "Shift added."
+    if @form.save
+      count = @form.shifts.size
+      redirect_to @activity, notice: count == 1 ? "Shift added." : "#{count} shifts added."
     else
       render :new, status: :unprocessable_content
     end
   end
 
   def edit
+    @form = ShiftForm.new(shift: @shift)
   end
 
   def update
@@ -39,7 +41,8 @@ class ShiftsController < ApplicationController
     # immediately confirms volunteers from the waiting list.
     promoted = []
     saved = @shift.with_lock do
-      @shift.update(shift_params).tap { |updated| promoted = ShiftPromotion.new(@shift).call if updated }
+      @form = ShiftForm.new(shift: @shift, **shift_params)
+      @form.save.tap { |updated| promoted = ShiftPromotion.new(@shift).call if updated }
     end
 
     if saved
@@ -89,6 +92,6 @@ class ShiftsController < ApplicationController
   end
 
   def shift_params
-    params.expect(shift: %i[starts_at ends_at capacity])
+    params.expect(shift: [ :date, :start_time, :end_time, :capacity, :recurring, { repeat_dates: [] } ]).to_h.symbolize_keys
   end
 end

@@ -1,16 +1,30 @@
-<%= form_with model: shift.new_record? ? [ shift.activity, shift ] : shift, class: "card form-card" do |f| %>
-  <%= render "shared/errors", record: shift %>
+<%# Date, start time and end time; adding can repeat the shift on more dates (ShiftForm).
+    The calendar is plain checkboxes, so it works without JavaScript; shift_form_controller.js
+    adds month paging, the main-date marker, the "ends the next day" hint and the summary. %>
+<%= form_with model: form, url: form.persisted? ? shift_path(form.shift) : activity_shifts_path(form.activity),
+              class: "card form-card", data: { controller: "shift-form" } do |f| %>
+  <%= render "shared/errors", record: form %>
 
   <div class="field">
-    <%= f.label :starts_at %>
-    <%= f.datetime_field :starts_at, required: true %>
-    <span class="field-hint">Hong Kong time</span>
+    <%= f.label :date %>
+    <%= f.date_field :date, required: true, min: (Date.current.iso8601 unless form.persisted?),
+                     data: { shift_form_target: "date", action: "shift-form#dateChanged" } %>
   </div>
 
-  <div class="field">
-    <%= f.label :ends_at %>
-    <%= f.datetime_field :ends_at, required: true %>
+  <div class="field-row">
+    <div class="field">
+      <%= f.label :start_time %>
+      <%= f.time_field :start_time, required: true, data: { shift_form_target: "startTime", action: "shift-form#startTimeChanged pointerdown->shift-form#prefillTime keydown.up->shift-form#prefillTime keydown.down->shift-form#prefillTime" } %>
+    </div>
+    <div class="field">
+      <%= f.label :end_time %>
+      <%= f.time_field :end_time, required: true, data: { shift_form_target: "endTime", action: "shift-form#endTimeChanged pointerdown->shift-form#prefillTime keydown.up->shift-form#prefillTime keydown.down->shift-form#prefillTime" } %>
+    </div>
   </div>
+  <p class="field-hint overnight-hint" data-shift-form-target="overnightHint" <%= "hidden" unless form.overnight? %>>
+    Ends the next day (past midnight).
+  </p>
+  <p class="field-hint">Hong Kong time. An end time earlier than the start time means the shift ends the next day.</p>
 
   <div class="field">
     <%= f.label :capacity %>
@@ -18,8 +32,16 @@
     <span class="field-hint">Volunteers beyond this number join the waiting list.</span>
   </div>
 
+  <% unless form.persisted? %>
+    <div class="field field-check">
+      <%= f.check_box :recurring, data: { shift_form_target: "recurring", action: "shift-form#toggleRecurring" } %>
+      <%= f.label :recurring, "Repeat on more dates" %>
+    </div>
+    <%= render "shifts/repeat_calendar", form: form %>
+  <% end %>
+
   <div class="actions">
-    <%= f.submit %>
-    <%= link_to "Cancel", shift.new_record? ? shift.activity : shift, class: "button button-ghost" %>
+    <%= f.submit data: { action: "shift-form#allowAnyMinute" } %>
+    <%= link_to "Cancel", form.persisted? ? form.shift : form.activity, class: "button button-ghost" %>
   </div>
 <% end %>

@@ -56,8 +56,27 @@ When("I try to edit the {string} shift of {string} directly") do |time, title|
 end
 
 When("I fill in the shift times for tomorrow from {string} to {string}") do |from, to|
-  fill_in "Starts at", with: tomorrow_at(from).strftime("%Y-%m-%dT%H:%M")
-  fill_in "Ends at", with: tomorrow_at(to).strftime("%Y-%m-%dT%H:%M")
+  fill_in "Date", with: Date.tomorrow.iso8601
+  fill_in "Start time", with: from
+  fill_in "End time", with: to
+end
+
+# Days in the repeat calendar are checkboxes labelled like "Saturday 14 November 2026".
+When("I also pick the dates {int} and {int} days after tomorrow") do |first, second|
+  [ first, second ].each { |days| check (Date.tomorrow + days).strftime("%A %-d %B %Y") }
+end
+
+Then("the {string} shift of {string} should end the next day at {string}") do |time, title, end_time|
+  shift = shift_of(time, title)
+  expect(shift.ends_at.to_date).to eq(shift.starts_at.to_date + 1)
+  expect(shift.ends_at.strftime("%H:%M")).to eq(end_time)
+end
+
+Then("{string} should have {int} shifts from {string} to {string}, a week apart") do |title, count, from, to|
+  shifts = Activity.find_by!(title: title).shifts.order(:starts_at)
+  expect(shifts.size).to eq(count)
+  expect(shifts.map { |shift| [ shift.starts_at.strftime("%H:%M"), shift.ends_at.strftime("%H:%M") ] }.uniq).to eq([ [ from, to ] ])
+  expect(shifts.each_cons(2).map { |a, b| (b.starts_at.to_date - a.starts_at.to_date).to_i }.uniq).to eq([ 7 ])
 end
 
 Then("I should be confirmed for the {string} shift of {string}") do |time, title|

@@ -49,4 +49,12 @@ module ShiftsHelper
     end
     "Delete this shift?"
   end
+
+  REPEAT_CALENDAR_MONTHS = 6
+
+  # First days of the months shown in the "Repeat on more dates" calendar, starting this month.
+  def repeat_calendar_months(count: REPEAT_CALENDAR_MONTHS)
+    first = Date.current.beginning_of_month
+    Array.new(count) { |offset| first >> offset }
+  end
 end
