@@ -122,19 +122,22 @@ RSpec.describe Shift, type: :model do
   describe "deleting" do
     let(:shift) { create(:shift) }
 
-    it "is refused while volunteers are signed up" do
-      signup = create(:signup, shift: shift)
-
-      expect(shift.destroy).to be false
-      expect(shift.errors[:base]).to include("This shift cannot be deleted because volunteers have signed up")
-      expect(signup.reload).to be_persisted
-    end
-
-    it "removes cancelled sign-ups with the shift" do
+    it "removes all of its sign-ups, including confirmed and waitlisted volunteers" do
+      create(:signup, shift: shift)
+      create(:signup, :waitlisted, shift: shift)
       create(:signup, :cancelled, shift: shift)
 
-      expect { shift.destroy }.to change(Signup, :count).by(-1)
+      expect { shift.destroy }.to change(Signup, :count).by(-3)
       expect(shift).to be_destroyed
+    end
+
+    it "leaves the volunteers' other sign-ups alone" do
+      signup = create(:signup, shift: shift)
+      elsewhere = create(:signup, user: signup.user)
+
+      shift.destroy
+
+      expect(elsewhere.reload).to be_persisted
     end
   end
 

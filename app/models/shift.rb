@@ -1,10 +1,8 @@
 class Shift < ApplicationRecord
   belongs_to :activity
   has_one :organization, through: :activity
+  # Deleting a shift removes its sign-ups; organizers are warned first (ShiftsHelper#delete_shift_confirmation).
   has_many :signups, dependent: :destroy
-
-  # Runs before the dependent signups are destroyed.
-  before_destroy :ensure_no_active_signups, prepend: true
 
   validates :starts_at, :ends_at, presence: true
   validates :capacity, presence: true, numericality: { only_integer: true, greater_than: 0 }
@@ -75,12 +73,5 @@ class Shift < ApplicationRecord
     return unless (starts_at_changed? || ends_at_changed?) && signups.active.exists?
 
     errors.add(:base, "Times cannot be changed after volunteers have signed up")
-  end
-
-  def ensure_no_active_signups
-    return unless signups.active.exists?
-
-    errors.add(:base, "This shift cannot be deleted because volunteers have signed up")
-    throw :abort
   end
 end

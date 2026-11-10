@@ -51,15 +51,30 @@ class ShiftsController < ApplicationController
     end
   end
 
+  # Organizers may delete a shift even when volunteers have signed up; the confirmation dialog
+  # warns them first. The shift row is locked so no sign-up can be added while it is being deleted.
   def destroy
-    if @shift.destroy
-      redirect_to @shift.activity, notice: "Shift deleted.", status: :see_other
-    else
-      redirect_to @shift, alert: @shift.errors.full_messages.to_sentence, status: :see_other
+    notice = @shift.with_lock do
+      message = deleted_shift_message(@shift)
+      @shift.destroy!
+      message
     end
+    redirect_to @shift.activity, notice: notice, status: :see_other
   end
 
   private
+
+  def deleted_shift_message(shift)
+    confirmed = shift.confirmed_count
+    affected = shift.signups.active.count
+    if shift.started? && confirmed.positive?
+      "Shift deleted. Attendance records for #{helpers.pluralize(confirmed, 'volunteer')} were deleted."
+    elsif affected.positive?
+      "Shift deleted. #{helpers.pluralize(affected, 'volunteer')} lost their place."
+    else
+      "Shift deleted."
+    end
+  end
 
   def set_activity
     @activity = Activity.find(params[:activity_id])

@@ -50,3 +50,16 @@ Feature: Manage activities and shifts
     And I am logged in
     When I try to edit the "09:00" shift of "Weekend Maths Tutoring" directly
     Then I should see "Only this organization's organizers can manage its shifts."
+
+  Scenario: An organizer deletes a shift volunteers have signed up for, after a warning
+    Given I am an organizer of "Green Campus Society"
+    And "Green Campus Society" has the activity "Lake Clean-up"
+    And "Lake Clean-up" has a shift tomorrow from "09:00" to "11:00" with capacity 1
+    And "Victor" was confirmed for the "09:00" shift of "Lake Clean-up"
+    And "Wendy" is waiting for the "09:00" shift of "Lake Clean-up"
+    And I am logged in
+    When I go to the "09:00" shift of "Lake Clean-up"
+    Then the delete confirmation should say "Delete this shift? 1 confirmed volunteer and 1 person on the waiting list will lose their place."
+    When I press "Delete shift"
+    Then I should see "Shift deleted. 2 volunteers lost their place."
+    And "Lake Clean-up" should have no shifts

@@ -33,4 +33,20 @@ module ShiftsHelper
     counts = signups.map(&:attendance).tally
     [ "#{counts.fetch('present', 0)} present", "#{counts.fetch('absent', 0)} absent", "#{counts.fetch('unmarked', 0)} not recorded" ].join(" · ")
   end
+
+  # Text of the confirmation dialog for deleting a shift, naming who is affected.
+  def delete_shift_confirmation(shift)
+    confirmed = shift.confirmed_count
+    waiting = shift.waitlist_count
+
+    if shift.started?
+      return "Delete this shift? Its attendance records for #{pluralize(confirmed, 'volunteer')} will be deleted." if confirmed.positive?
+    else
+      affected = []
+      affected << pluralize(confirmed, "confirmed volunteer") if confirmed.positive?
+      affected << "#{pluralize(waiting, 'person')} on the waiting list" if waiting.positive?
+      return "Delete this shift? #{affected.to_sentence} will lose their place." if affected.any?
+    end
+    "Delete this shift?"
+  end
 end

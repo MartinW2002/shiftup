@@ -147,3 +147,12 @@ Given("{string} cancels the {string} shift of {string}") do |name, time, title|
   result = ShiftCancellation.new(shift: shift_of(time, title), user: volunteer_named(name)).call
   expect(result).to be_success
 end
+
+Then("the delete confirmation should say {string}") do |text|
+  form = find("form[action='#{page.current_path}']", text: "Delete shift")
+  expect(form["data-turbo-confirm"]).to eq(text)
+end
+
+Then("{string} should have no shifts") do |title|
+  expect(Activity.find_by!(title: title).shifts).to be_empty
+end

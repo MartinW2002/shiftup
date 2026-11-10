@@ -79,16 +79,40 @@ RSpec.describe "Shifts", type: :request do
       delete shift_path(shift)
 
       expect(response).to redirect_to(activity_path(activity))
+      expect(flash[:notice]).to eq("Shift deleted.")
       expect(Shift.exists?(shift.id)).to be false
     end
 
-    it "refuses to delete a shift with sign-ups" do
+    it "deletes a shift volunteers have signed up for, and says how many lost their place" do
       create(:signup, shift: shift)
+      create(:signup, :waitlisted, shift: shift)
+      create(:signup, :cancelled, shift: shift)
 
       delete shift_path(shift)
 
-      expect(flash[:alert]).to eq("This shift cannot be deleted because volunteers have signed up")
-      expect(Shift.exists?(shift.id)).to be true
+      expect(response).to redirect_to(activity_path(activity))
+      expect(flash[:notice]).to eq("Shift deleted. 2 volunteers lost their place.")
+      expect(Shift.exists?(shift.id)).to be false
+      expect(Signup.count).to eq(0)
+    end
+
+    it "says when deleting a past shift removes its attendance records" do
+      past = create(:shift, :past, activity: activity)
+      create(:signup, shift: past).update!(attendance: :present)
+
+      delete shift_path(past)
+
+      expect(flash[:notice]).to eq("Shift deleted. Attendance records for 1 volunteer were deleted.")
+    end
+
+    it "warns in the delete confirmation who will lose their place" do
+      create_list(:signup, 2, shift: shift)
+      create(:signup, :waitlisted, shift: shift)
+
+      get shift_path(shift)
+
+      form = Nokogiri::HTML(response.body).at_css("form[action='#{shift_path(shift)}'][data-turbo-confirm]")
+      expect(form["data-turbo-confirm"]).to eq("Delete this shift? 2 confirmed volunteers and 1 person on the waiting list will lose their place.")
     end
   end
 

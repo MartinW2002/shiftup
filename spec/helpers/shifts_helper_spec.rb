@@ -32,4 +32,42 @@ RSpec.describe ShiftsHelper, type: :helper do
       expect(helper.places_text(build(:shift, starts_at: 3.hours.ago, ends_at: 1.hour.ago))).to eq("Ended")
     end
   end
+
+  describe "#delete_shift_confirmation" do
+    let(:shift) { create(:shift, capacity: 3) }
+
+    it "is a plain question when nobody is signed up" do
+      create(:signup, :cancelled, shift: shift)
+
+      expect(helper.delete_shift_confirmation(shift)).to eq("Delete this shift?")
+    end
+
+    it "names the confirmed volunteers and the people waiting, in singular and plural" do
+      create(:signup, shift: shift)
+      expect(helper.delete_shift_confirmation(shift)).to eq("Delete this shift? 1 confirmed volunteer will lose their place.")
+
+      create(:signup, shift: shift)
+      create_list(:signup, 2, :waitlisted, shift: shift)
+      expect(helper.delete_shift_confirmation(shift)).to eq(
+        "Delete this shift? 2 confirmed volunteers and 2 people on the waiting list will lose their place."
+      )
+    end
+
+    it "only mentions the waiting list when nobody is confirmed" do
+      create(:signup, :waitlisted, shift: shift)
+
+      expect(helper.delete_shift_confirmation(shift)).to eq("Delete this shift? 1 person on the waiting list will lose their place.")
+    end
+
+    it "warns about attendance records for a shift that has already started" do
+      past = create(:shift, :past)
+      create_list(:signup, 3, shift: past)
+
+      expect(helper.delete_shift_confirmation(past)).to eq("Delete this shift? Its attendance records for 3 volunteers will be deleted.")
+    end
+
+    it "is a plain question for a past shift nobody attended" do
+      expect(helper.delete_shift_confirmation(create(:shift, :past))).to eq("Delete this shift?")
+    end
+  end
 end
