@@ -150,6 +150,8 @@ main.container { padding-top: 28px; padding-bottom: 56px; }
 
 .section-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin: 1.6em 0 0.6em; }
 .section-header h2 { margin: 0; }
+.section-header.page-header { margin: 0.25em 0 0.4em; }
+.section-header h1 { margin: 0; }
 
 .actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 20px 0; }
 .actions form { margin: 0; }

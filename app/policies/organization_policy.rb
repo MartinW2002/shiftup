@@ -14,6 +14,12 @@ class OrganizationPolicy < ApplicationPolicy
     user.present? && !user.member_of?(record)
   end
 
+  # Volunteers may leave; organizers stay to manage the organization. Whether the user is a
+  # member at all is checked by MembershipsController#destroy, with its own message.
+  def leave?
+    user.present? && !user.organizer_of?(record)
+  end
+
   # Only the organization's own organizers may change it.
   def update?
     user.present? && user.organizer_of?(record)

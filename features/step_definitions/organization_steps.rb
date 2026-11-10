@@ -42,3 +42,16 @@ end
 Given("{string} has the activity {string}") do |name, title|
   create(:activity, organization: Organization.find_by!(name: name), title: title)
 end
+
+When("I try to leave {string} directly") do |name|
+  page.driver.submit :delete, organization_membership_path(Organization.find_by!(name: name)), {}
+end
+
+Then("I should still be a(n) {word} of {string}") do |role, name|
+  expect(@current_user.membership_in(Organization.find_by!(name: name))&.role).to eq(role)
+end
+
+Then("the leave confirmation should say {string}") do |text|
+  form = find("form[action='#{page.current_path}/membership']")
+  expect(form["data-turbo-confirm"]).to include(text)
+end

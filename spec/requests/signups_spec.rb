@@ -87,6 +87,19 @@ RSpec.describe "Signups", type: :request do
       expect(response.body).not_to include("Cancelled Shift", "Someone Else")
     end
 
+    it "keeps past shifts of an organization the volunteer left, without a link to them" do
+      past = create(:shift, :past, activity: create(:activity, organization: organization, title: "Tree Planting"))
+      create(:signup, shift: past, user: volunteer)
+      volunteer.membership_in(organization).destroy!
+      sign_in volunteer
+
+      get signups_path
+
+      page = Nokogiri::HTML(response.body)
+      expect(page.css("#past-shifts").text).to include("Tree Planting")
+      expect(page.css("#past-shifts a[href='#{shift_path(past)}']")).to be_empty
+    end
+
     it "shows the waiting list position" do
       sign_in volunteer
       create(:signup, shift: shift)

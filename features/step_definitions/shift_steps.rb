@@ -138,3 +138,7 @@ end
 Then("{string} should be recorded as {word} for the {string} shift of {string}") do |name, attendance, time, title|
   expect(shift_of(time, title).signups.find_by!(user: volunteer_named(name)).attendance).to eq(attendance)
 end
+
+Given("I was confirmed and present for the {string} shift of {string}") do |time, title|
+  create(:signup, shift: shift_of(time, title), user: @current_user).update!(attendance: :present)
+end

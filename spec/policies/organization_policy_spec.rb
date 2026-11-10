@@ -7,13 +7,13 @@ RSpec.describe OrganizationPolicy, type: :policy do
     subject { described_class.new(create(:membership, :organizer, organization: organization).user, organization) }
 
     it { is_expected.to permit_actions(%i[show update]) }
-    it { is_expected.to forbid_action(:join) }
+    it { is_expected.to forbid_actions(%i[join leave]) }
   end
 
   context "for a volunteer of the organization" do
     subject { described_class.new(create(:membership, organization: organization).user, organization) }
 
-    it { is_expected.to permit_action(:show) }
+    it { is_expected.to permit_actions(%i[show leave]) }
     it { is_expected.to forbid_actions(%i[update join]) }
   end
 
@@ -27,7 +27,7 @@ RSpec.describe OrganizationPolicy, type: :policy do
   context "for a visitor who is not logged in" do
     subject { described_class.new(nil, organization) }
 
-    it { is_expected.to forbid_actions(%i[index show join update]) }
+    it { is_expected.to forbid_actions(%i[index show join leave update]) }
   end
 
   describe "scope" do

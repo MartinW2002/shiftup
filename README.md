@@ -18,7 +18,8 @@ volunteers sign up within capacity, and cancellations are refilled from an order
 
 **Volunteers**
 
-- Join any organization as a volunteer (organizer roles are never self-assigned)
+- Join any organization as a volunteer (organizer roles are never self-assigned), and leave it again,
+  which cancels your upcoming shifts and waiting list places there
 - Sign up for a shift within capacity, or join its waiting list and see your position; overlapping shifts are refused (US1)
 - Cancel a sign-up or leave a waiting list; the next eligible volunteer is promoted (US2)
 - Find shifts by text, organization, date range and free places
@@ -50,6 +51,7 @@ volunteers sign up within capacity, and cancellations are refilled from an order
 | Shift changes | Shifts must start in the future and end after they start. Their times cannot change once volunteers have signed up, and shifts or activities with sign-ups cannot be deleted. Shifts that have started accept no sign-ups. |
 | Promotion | When a place opens (a cancellation, or an organizer raising the capacity), the earliest waitlisted volunteer without an overlapping confirmed shift is confirmed. A skipped volunteer keeps their place in line. Places owed to the waiting list are filled before a newcomer's sign-up is handled, so nobody can jump the queue. |
 | Cancellation | Volunteers cancel only their own sign-ups, and only before the shift starts. The sign-up is kept with status `cancelled` as a record. An account cannot be deleted while it holds upcoming shifts or waiting list places, so those places are passed on first. |
+| Leaving | Volunteers can leave an organization; organizers cannot. Leaving cancels the volunteer's upcoming shifts and waiting list places there (the confirmation dialog lists them first), and each freed place goes to the next eligible volunteer on the waiting list. Past sign-ups and attendance records are kept. |
 | Attendance | Recorded only for confirmed volunteers, only once the shift has started, and only by the organization's organizers. |
 | Authorization | Only the owning organization's organizers can edit activities, shifts or attendance, and only members can see or sign up for an organization's shifts. Enforced on the server with Pundit. |
 
@@ -150,8 +152,8 @@ bundle exec rspec
 COVERAGE_CHECK=1 bundle exec cucumber   # fails if merged line coverage is below 80%
 ```
 
-Current coverage (commit `2ad0280`): **100% of lines (472/472) and 100% of branches (131/131)**, from
-223 RSpec examples and 31 Cucumber scenarios. Each CI run uploads the HTML report as the `coverage` artifact.
+Current coverage: **100% of lines (517/517) and 100% of branches (149/149)**, from
+250 RSpec examples and 36 Cucumber scenarios. Each CI run uploads the HTML report as the `coverage` artifact.
 
 What the suites cover:
 
@@ -162,6 +164,7 @@ What the suites cover:
 | Concurrency (capacity, overlap, deadlocks) | `spec/services/shift_signup_spec.rb` ("under concurrent requests") |
 | Permissions, including direct URLs | `spec/policies/`, `spec/requests/`, `features/manage_shifts.feature` |
 | Organization isolation | `features/organization_access.feature`, `spec/requests/organizations_spec.rb`, `spec/policies/shift_policy_spec.rb` |
+| Joining and leaving organizations | `features/leave_organization.feature`, `spec/requests/memberships_spec.rb`, `spec/models/membership_spec.rb` |
 | Search and filters | `features/find_shifts.feature`, `spec/queries/shift_search_spec.rb` |
 | Demo data | `spec/seeds_spec.rb` |
 
@@ -210,8 +213,7 @@ requests"), and how **US2** forced a second iteration on it.
 - Organizers cannot remove a volunteer from a shift; volunteers cancel their own sign-ups.
 - There is no page for creating organizations or granting the organizer role. Both come from the seeds
   (or the Rails console); new accounts join organizations as volunteers.
-- Members cannot leave an organization, and an organizer who deletes their account can leave an
-  organization without organizers.
+- An organizer who deletes their account can leave an organization without organizers.
 - Deleting an account also deletes that user's past attendance records.
 - Times are entered and shown in Hong Kong time only. *Find shifts* has no pagination.
 

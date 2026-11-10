@@ -34,7 +34,8 @@
       <% shift = signup.shift %>
       <li class="card card-row">
         <div>
-          <%= link_to shift.activity.title, shift, class: "shift-time" %>
+          <%# Past shifts stay in the history after leaving the organization, but without a link. %>
+          <%= link_to_if(policy(shift).show?, shift.activity.title, shift, class: "shift-time") { tag.span(shift.activity.title, class: "shift-time") } %>
           <p><%= shift.time_range_text %></p>
           <p class="muted"><%= shift.activity.organization.name %></p>
         </div>

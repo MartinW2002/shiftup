@@ -4,6 +4,7 @@ en:
     organization_policy:
       show?: "Only members can see this organization's activities. Join it from the organizations page."
       join?: "You are already a member of this organization."
+      leave?: "Organizers cannot leave their organization."
     activity_policy:
       show?: "Only members can see this organization's activities. Join it from the organizations page."
       new?: "Only this organization's organizers can manage its activities."

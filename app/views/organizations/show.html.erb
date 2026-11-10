@@ -1,6 +1,16 @@
 <% content_for :title, "#{@organization.name} · ShiftUp" %>
 
-<h1><%= @organization.name %></h1>
+<div class="section-header page-header">
+  <h1><%= @organization.name %></h1>
+  <% if policy(@organization).leave? %>
+    <% to_cancel = current_user.membership_in(@organization).upcoming_signups_summary %>
+    <%= button_to "Leave organization", organization_membership_path(@organization), method: :delete,
+                  class: "button-danger button-small",
+                  form: { data: { turbo_confirm: [ "Leave #{@organization.name}?",
+                                                   ("Your #{to_cancel} there will be cancelled." if to_cancel),
+                                                   "You can join again later." ].compact.join(" ") } } %>
+  <% end %>
+</div>
 <% if @organization.description.present? %>
   <p class="lead"><%= @organization.description %></p>
 <% end %>
