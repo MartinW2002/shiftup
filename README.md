@@ -67,7 +67,7 @@ waiting-list order.
 ## Runtime versions
 
 - Ruby 3.3.8 (see `.ruby-version`)
-- Rails 8.1.4
+- Rails 8.1.4.1
 - PostgreSQL 17 (any version from 14 works)
 - Devise 5.0, Pundit 2.5, RSpec Rails 8.0, Cucumber Rails 4.1, SimpleCov 1.3
 
